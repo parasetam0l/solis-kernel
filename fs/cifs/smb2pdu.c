@@ -430,12 +430,13 @@ SMB2_negotiate(const unsigned int xid, struct cifs_ses *ses)
 	rc = cifs_enable_signing(server, ses->sign);
 	if (rc)
 		goto neg_exit;
-	if (blob_length) {
+	if (blob_length)
 		rc = decode_negTokenInit(security_blob, blob_length, server);
-		if (rc == 1)
-			rc = 0;
-		else if (rc == 0)
-			rc = -EIO;
+	if (rc == 1)
+		rc = 0;
+	else if (rc == 0) {
+		rc = -EIO;
+		goto neg_exit;
 	}
 neg_exit:
 	free_rsp_buf(resp_buftype, rsp);
