@@ -690,37 +690,20 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, exynos);
 
-	exynos->dev	= dev;
-#if IS_ENABLED(CONFIG_OF)
-	exynos->drv_data = dwc3_exynos_get_driver_data(pdev);
-#endif
-	if (!exynos->drv_data) {
-		dev_info(exynos->dev,
-			"%s fail: drv_data is not available\n", __func__);
-		return -EINVAL;
+	ret = dwc3_exynos_register_phys(exynos);
+	if (ret) {
+		dev_err(dev, "couldn't register PHYs\n");
+		return ret;
 	}
 
-	exynos->idle_ip_index = exynos_get_idle_ip_index(dev_name(dev));
-	exynos_update_ip_idle_status(exynos->idle_ip_index, 0);
+	exynos->dev	= dev;
 
-#ifdef CONFIG_PM_DEVFREQ
-	if (of_property_read_u32(node, "usb-pm-qos-int", &exynos->int_min_lock))
-		exynos->int_min_lock = 0;
-
-	if (exynos->int_min_lock)
-		pm_qos_add_request(&exynos_usb_int_qos, PM_QOS_DEVICE_THROUGHPUT, 0);
-#endif
-	ret = dwc3_exynos_clk_get(exynos);
-	if (ret)
-		return ret;
-
-	dwc3_exynos_clk_prepare(exynos);
-	dwc3_exynos_clk_enable(exynos);
-
-	pm_runtime_set_active(dev);
-	pm_runtime_enable(dev);
-
-	dwc3_exynos_rsw_init(exynos);
+	exynos->clk = devm_clk_get(dev, "usbdrd30");
+	if (IS_ERR(exynos->clk)) {
+		dev_err(dev, "couldn't get clock\n");
+		return -EINVAL;
+	}
+	clk_prepare_enable(exynos->clk);
 
 	exynos->vdd33 = devm_regulator_get(dev, "vdd33");
 	if (IS_ERR(exynos->vdd33)) {
@@ -784,10 +767,7 @@ err3:
 	if (exynos->vdd33)
 		regulator_disable(exynos->vdd33);
 err2:
-	pm_runtime_disable(&pdev->dev);
-	dwc3_exynos_clk_disable(exynos);
-	dwc3_exynos_clk_unprepare(exynos);
-	pm_runtime_set_suspended(&pdev->dev);
+	clk_disable_unprepare(exynos->clk);
 	return ret;
 }
 
