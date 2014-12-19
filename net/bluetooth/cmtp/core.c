@@ -338,9 +338,6 @@ int cmtp_add_connection(struct cmtp_connadd_req *req, struct socket *sock)
 	if (!l2cap_is_socket(sock))
 		return -EBADFD;
 
-	if (req->flags & ~valid_flags)
-		return -EINVAL;
-
 	session = kzalloc(sizeof(struct cmtp_session), GFP_KERNEL);
 	if (!session)
 		return -ENOMEM;
