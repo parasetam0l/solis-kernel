@@ -430,13 +430,12 @@ SMB2_negotiate(const unsigned int xid, struct cifs_ses *ses)
 	rc = cifs_enable_signing(server, ses->sign);
 	if (rc)
 		goto neg_exit;
-	if (blob_length)
+	if (blob_length) {
 		rc = decode_negTokenInit(security_blob, blob_length, server);
-	if (rc == 1)
-		rc = 0;
-	else if (rc == 0) {
-		rc = -EIO;
-		goto neg_exit;
+		if (rc == 1)
+			rc = 0;
+		else if (rc == 0)
+			rc = -EIO;
 	}
 neg_exit:
 	free_rsp_buf(resp_buftype, rsp);
@@ -533,7 +532,7 @@ SMB2_sess_setup(const unsigned int xid, struct cifs_ses *ses,
 	u16 blob_length = 0;
 	struct key *spnego_key = NULL;
 	char *security_blob = NULL;
-	unsigned char *ntlmssp_blob = NULL;
+	char *ntlmssp_blob = NULL;
 	bool use_spnego = false; /* else use raw ntlmssp */
 
 	cifs_dbg(FYI, "Session Setup\n");
