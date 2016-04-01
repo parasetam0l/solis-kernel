@@ -696,11 +696,8 @@ static int translate_table(struct xt_table_info *newinfo, void *entry0,
 		}
 	}
 
-	if (!mark_source_chains(newinfo, repl->valid_hooks, entry0, offsets)) {
-		ret = -ELOOP;
-		goto out_free;
-	}
-	kvfree(offsets);
+	if (!mark_source_chains(newinfo, repl->valid_hooks, entry0))
+		return -ELOOP;
 
 	/* Finally, each sanity check must pass */
 	i = 0;
