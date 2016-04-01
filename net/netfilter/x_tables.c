@@ -633,7 +633,6 @@ EXPORT_SYMBOL(xt_compat_check_entry_offsets);
  * xt_check_entry_offsets - validate arp/ip/ip6t_entry
  *
  * @base: pointer to arp/ip/ip6t_entry
-<<<<<<< HEAD
  * @elems: pointer to first xt_entry_match, i.e. ip(6)t_entry->elems
  * @target_offset: the arp/ip/ip6_t->target_offset
  * @next_offset: the arp/ip/ip6_t->next_offset
@@ -647,19 +646,12 @@ EXPORT_SYMBOL(xt_compat_check_entry_offsets);
  * the target structure begins.
  *
  * Also see xt_compat_check_entry_offsets for CONFIG_COMPAT version.
-=======
- * @target_offset: the arp/ip/ip6_t->target_offset
- * @next_offset: the arp/ip/ip6_t->next_offset
- *
- * validates that target_offset and next_offset are sane.
->>>>>>> 62e6fd2010f7... netfilter: x_tables: add and use xt_check_entry_offsets
  *
  * The arp/ip/ip6t_entry structure @base must have passed following tests:
  * - it must point to a valid memory location
  * - base to base + next_offset must be accessible, i.e. not exceed allocated
  *   length.
  *
-<<<<<<< HEAD
  * A well-formed entry looks like this:
  *
  * ip(6)t_entry   match [mtdata]  match [mtdata] target [tgdata] ip(6)t_entry
@@ -693,22 +685,10 @@ int xt_check_entry_offsets(const void *base,
 	if (target_offset < size_of_base_struct)
 		return -EINVAL;
 
-=======
- * Return: 0 on success, negative errno on failure.
- */
-int xt_check_entry_offsets(const void *base,
-			   unsigned int target_offset,
-			   unsigned int next_offset)
-{
-	const struct xt_entry_target *t;
-	const char *e = base;
-
->>>>>>> 62e6fd2010f7... netfilter: x_tables: add and use xt_check_entry_offsets
 	if (target_offset + sizeof(*t) > next_offset)
 		return -EINVAL;
 
 	t = (void *)(e + target_offset);
-<<<<<<< HEAD
 	if (t->u.target_size < sizeof(*t))
 		return -EINVAL;
 
@@ -775,6 +755,11 @@ bool xt_find_jump_offset(const unsigned int *offsets,
 EXPORT_SYMBOL(xt_find_jump_offset);
 
 =======
+=======
+	if (t->u.target_size < sizeof(*t))
+		return -EINVAL;
+
+>>>>>>> 37a6fed6bcd0... netfilter: x_tables: assert minimum target size
 	if (target_offset + t->u.target_size > next_offset)
 		return -EINVAL;
 
