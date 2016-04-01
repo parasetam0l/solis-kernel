@@ -1576,6 +1576,41 @@ compat_copy_entry_from_user(struct compat_ip6t_entry *e, void **dstptr,
 	}
 }
 
+static int compat_check_entry(struct ip6t_entry *e, struct net *net,
+			      const char *name)
+{
+	unsigned int j;
+	int ret = 0;
+	struct xt_mtchk_param mtpar;
+	struct xt_entry_match *ematch;
+
+	j = 0;
+	mtpar.net	= net;
+	mtpar.table     = name;
+	mtpar.entryinfo = &e->ipv6;
+	mtpar.hook_mask = e->comefrom;
+	mtpar.family    = NFPROTO_IPV6;
+	xt_ematch_foreach(ematch, e) {
+		ret = check_match(ematch, &mtpar);
+		if (ret != 0)
+			goto cleanup_matches;
+		++j;
+	}
+
+	ret = check_target(e, net, name);
+	if (ret)
+		goto cleanup_matches;
+	return 0;
+
+ cleanup_matches:
+	xt_ematch_foreach(ematch, e) {
+		if (j-- == 0)
+			break;
+		cleanup_match(ematch, net);
+	}
+	return ret;
+}
+
 static int
 translate_compat_table(struct net *net,
 		       struct xt_table_info **pinfo,
@@ -1653,13 +1688,10 @@ translate_compat_table(struct net *net,
 	}
 	entry1 = newinfo->entries[raw_smp_processor_id()];
 	pos = entry1;
-	size = compatr->size;
-	xt_entry_foreach(iter0, entry0, compatr->size) {
-		ret = compat_copy_entry_from_user(iter0, &pos, &size,
-						  newinfo, entry1);
-		if (ret != 0)
-			break;
-	}
+	xt_entry_foreach(iter0, entry0, compatr->size)
+		compat_copy_entry_from_user(iter0, &pos, &size,
+					    newinfo, entry1);
+
 	xt_compat_flush_offsets(AF_INET6);
 	xt_compat_unlock(AF_INET6);
 
