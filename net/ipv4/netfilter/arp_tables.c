@@ -1201,9 +1201,7 @@ check_compat_entry_size_and_hooks(struct compat_arpt_entry *e,
 				  struct xt_table_info *newinfo,
 				  unsigned int *size,
 				  const unsigned char *base,
-				  const unsigned char *limit,
-				  const unsigned int *hook_entries,
-				  const unsigned int *underflows)
+				  const unsigned char *limit)
 {
 	struct xt_entry_target *t;
 	struct xt_target *target;
@@ -1311,12 +1309,6 @@ static int translate_compat_table(struct xt_table_info **pinfo,
 	size = compatr->size;
 	info->number = compatr->num_entries;
 
-	/* Init all hooks to impossible value. */
-	for (i = 0; i < NF_ARP_NUMHOOKS; i++) {
-		info->hook_entry[i] = 0xFFFFFFFF;
-		info->underflow[i] = 0xFFFFFFFF;
-	}
-
 	duprintf("translate_compat_table: size %u\n", info->size);
 	j = 0;
 	xt_compat_lock(NFPROTO_ARP);
@@ -1325,9 +1317,7 @@ static int translate_compat_table(struct xt_table_info **pinfo,
 	xt_entry_foreach(iter0, entry0, compatr->size) {
 		ret = check_compat_entry_size_and_hooks(iter0, info, &size,
 							entry0,
-							entry0 + compatr->size,
-							compatr->hook_entry,
-							compatr->underflow);
+							entry0 + compatr->size);
 		if (ret != 0)
 			goto out_unlock;
 		++j;
@@ -1338,23 +1328,6 @@ static int translate_compat_table(struct xt_table_info **pinfo,
 		duprintf("translate_compat_table: %u not %u entries\n",
 			 j, compatr->num_entries);
 		goto out_unlock;
-	}
-
-	/* Check hooks all assigned */
-	for (i = 0; i < NF_ARP_NUMHOOKS; i++) {
-		/* Only hooks which are valid */
-		if (!(compatr->valid_hooks & (1 << i)))
-			continue;
-		if (info->hook_entry[i] == 0xFFFFFFFF) {
-			duprintf("Invalid hook entry %u %u\n",
-				 i, info->hook_entry[i]);
-			goto out_unlock;
-		}
-		if (info->underflow[i] == 0xFFFFFFFF) {
-			duprintf("Invalid underflow %u %u\n",
-				 i, info->underflow[i]);
-			goto out_unlock;
-		}
 	}
 
 	ret = -ENOMEM;
@@ -1373,45 +1346,17 @@ static int translate_compat_table(struct xt_table_info **pinfo,
 	xt_entry_foreach(iter0, entry0, compatr->size)
 		compat_copy_entry_from_user(iter0, &pos, &size,
 					    newinfo, entry1);
+
+	/* all module references in entry0 are now gone */
+
 	xt_compat_flush_offsets(NFPROTO_ARP);
 	xt_compat_unlock(NFPROTO_ARP);
 
-	ret = -ELOOP;
-	if (!mark_source_chains(newinfo, compatr->valid_hooks, entry1))
-		goto free_newinfo;
+	memcpy(&repl, compatr, sizeof(*compatr));
 
-	i = 0;
-	xt_entry_foreach(iter1, entry1, newinfo->size) {
-		ret = check_target(iter1, compatr->name);
-		if (ret != 0)
-			break;
-		++i;
-		if (strcmp(arpt_get_target(iter1)->u.user.name,
-		    XT_ERROR_TARGET) == 0)
-			++newinfo->stacksize;
-	}
-	if (ret) {
-		/*
-		 * The first i matches need cleanup_entry (calls ->destroy)
-		 * because they had called ->check already. The other j-i
-		 * entries need only release.
-		 */
-		int skip = i;
-		j -= i;
-		xt_entry_foreach(iter0, entry0, newinfo->size) {
-			if (skip-- > 0)
-				continue;
-			if (j-- == 0)
-				break;
-			compat_release_entry(iter0);
-		}
-		xt_entry_foreach(iter1, entry1, newinfo->size) {
-			if (i-- == 0)
-				break;
-			cleanup_entry(iter1);
-		}
-		xt_free_table_info(newinfo);
-		return ret;
+	for (i = 0; i < NF_ARP_NUMHOOKS; i++) {
+		repl.hook_entry[i] = newinfo->hook_entry[i];
+		repl.underflow[i] = newinfo->underflow[i];
 	}
 
 	repl.num_counters = 0;
@@ -1428,7 +1373,10 @@ static int translate_compat_table(struct xt_table_info **pinfo,
 
 free_newinfo:
 	xt_free_table_info(newinfo);
-out:
+	return ret;
+out_unlock:
+	xt_compat_flush_offsets(NFPROTO_ARP);
+	xt_compat_unlock(NFPROTO_ARP);
 	xt_entry_foreach(iter0, entry0, compatr->size) {
 		if (j-- == 0)
 			break;
