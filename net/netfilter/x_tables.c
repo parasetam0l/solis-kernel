@@ -211,6 +211,9 @@ xt_request_find_match(uint8_t nfproto, const char *name, uint8_t revision)
 {
 	struct xt_match *match;
 
+	if (strnlen(name, XT_EXTENSION_MAXNAMELEN) == XT_EXTENSION_MAXNAMELEN)
+		return ERR_PTR(-EINVAL);
+
 	match = xt_find_match(nfproto, name, revision);
 	if (IS_ERR(match)) {
 		request_module("%st_%s", xt_prefix[nfproto], name);
@@ -252,6 +255,9 @@ EXPORT_SYMBOL(xt_find_target);
 struct xt_target *xt_request_find_target(u8 af, const char *name, u8 revision)
 {
 	struct xt_target *target;
+
+	if (strnlen(name, XT_EXTENSION_MAXNAMELEN) == XT_EXTENSION_MAXNAMELEN)
+		return ERR_PTR(-EINVAL);
 
 	target = xt_find_target(af, name, revision);
 	if (IS_ERR(target)) {
@@ -362,6 +368,36 @@ textify_hooks(char *buf, size_t size, unsigned int mask, uint8_t nfproto)
 
 	return buf;
 }
+
+/**
+ * xt_check_proc_name - check that name is suitable for /proc file creation
+ *
+ * @name: file name candidate
+ * @size: length of buffer
+ *
+ * some x_tables modules wish to create a file in /proc.
+ * This function makes sure that the name is suitable for this
+ * purpose, it checks that name is NUL terminated and isn't a 'special'
+ * name, like "..".
+ *
+ * returns negative number on error or 0 if name is useable.
+ */
+int xt_check_proc_name(const char *name, unsigned int size)
+{
+	if (name[0] == '\0')
+		return -EINVAL;
+
+	if (strnlen(name, size) == size)
+		return -ENAMETOOLONG;
+
+	if (strcmp(name, ".") == 0 ||
+	    strcmp(name, "..") == 0 ||
+	    strchr(name, '/'))
+		return -EINVAL;
+
+	return 0;
+}
+EXPORT_SYMBOL(xt_check_proc_name);
 
 int xt_check_match(struct xt_mtchk_param *par,
 		   unsigned int size, u_int8_t proto, bool inv_proto)
@@ -586,7 +622,6 @@ int xt_compat_match_to_user(const struct xt_entry_match *m,
 }
 EXPORT_SYMBOL_GPL(xt_compat_match_to_user);
 
-<<<<<<< HEAD
 /* non-compat version may have padding after verdict */
 struct compat_xt_standard_target {
 	struct compat_xt_entry_target t;
@@ -604,15 +639,6 @@ int xt_compat_check_entry_offsets(const void *base, const char *elems,
 	if (target_offset < size_of_base_struct)
 		return -EINVAL;
 
-=======
-int xt_compat_check_entry_offsets(const void *base,
-				  unsigned int target_offset,
-				  unsigned int next_offset)
-{
-	const struct compat_xt_entry_target *t;
-	const char *e = base;
-
->>>>>>> 7ef13f496d3b... netfilter: x_tables: add compat version of xt_check_entry_offsets
 	if (target_offset + sizeof(*t) > next_offset)
 		return -EINVAL;
 
@@ -623,7 +649,6 @@ int xt_compat_check_entry_offsets(const void *base,
 	if (target_offset + t->u.target_size > next_offset)
 		return -EINVAL;
 
-<<<<<<< HEAD
 	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) == 0 &&
 	    COMPAT_XT_ALIGN(target_offset + sizeof(struct compat_xt_standard_target)) != next_offset)
 		return -EINVAL;
@@ -636,9 +661,6 @@ int xt_compat_check_entry_offsets(const void *base,
 
 	return xt_check_entry_match(elems, base + target_offset,
 				    __alignof__(struct compat_xt_entry_match));
-=======
-	return 0;
->>>>>>> 7ef13f496d3b... netfilter: x_tables: add compat version of xt_check_entry_offsets
 }
 EXPORT_SYMBOL(xt_compat_check_entry_offsets);
 #endif /* CONFIG_COMPAT */
@@ -651,7 +673,6 @@ EXPORT_SYMBOL(xt_compat_check_entry_offsets);
  * @target_offset: the arp/ip/ip6_t->target_offset
  * @next_offset: the arp/ip/ip6_t->next_offset
  *
-<<<<<<< HEAD
  * validates that target_offset and next_offset are sane and that all
  * match sizes (if any) align with the target offset.
  *
@@ -660,9 +681,6 @@ EXPORT_SYMBOL(xt_compat_check_entry_offsets);
  * match structures are aligned, and that the last structure ends where
  * the target structure begins.
  *
-=======
- * validates that target_offset and next_offset are sane.
->>>>>>> 7ef13f496d3b... netfilter: x_tables: add compat version of xt_check_entry_offsets
  * Also see xt_compat_check_entry_offsets for CONFIG_COMPAT version.
  *
  * The arp/ip/ip6t_entry structure @base must have passed following tests:
@@ -772,20 +790,6 @@ bool xt_find_jump_offset(const unsigned int *offsets,
 }
 EXPORT_SYMBOL(xt_find_jump_offset);
 
-=======
-=======
-	if (t->u.target_size < sizeof(*t))
-		return -EINVAL;
-
->>>>>>> 37a6fed6bcd0... netfilter: x_tables: assert minimum target size
-	if (target_offset + t->u.target_size > next_offset)
-		return -EINVAL;
-
-	return 0;
-}
-EXPORT_SYMBOL(xt_check_entry_offsets);
-
->>>>>>> 62e6fd2010f7... netfilter: x_tables: add and use xt_check_entry_offsets
 int xt_check_target(struct xt_tgchk_param *par,
 		    unsigned int size, u_int8_t proto, bool inv_proto)
 {
