@@ -586,6 +586,7 @@ int xt_compat_match_to_user(const struct xt_entry_match *m,
 }
 EXPORT_SYMBOL_GPL(xt_compat_match_to_user);
 
+<<<<<<< HEAD
 /* non-compat version may have padding after verdict */
 struct compat_xt_standard_target {
 	struct compat_xt_entry_target t;
@@ -603,6 +604,15 @@ int xt_compat_check_entry_offsets(const void *base, const char *elems,
 	if (target_offset < size_of_base_struct)
 		return -EINVAL;
 
+=======
+int xt_compat_check_entry_offsets(const void *base,
+				  unsigned int target_offset,
+				  unsigned int next_offset)
+{
+	const struct compat_xt_entry_target *t;
+	const char *e = base;
+
+>>>>>>> 7ef13f496d3b... netfilter: x_tables: add compat version of xt_check_entry_offsets
 	if (target_offset + sizeof(*t) > next_offset)
 		return -EINVAL;
 
@@ -613,6 +623,7 @@ int xt_compat_check_entry_offsets(const void *base, const char *elems,
 	if (target_offset + t->u.target_size > next_offset)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (strcmp(t->u.user.name, XT_STANDARD_TARGET) == 0 &&
 	    COMPAT_XT_ALIGN(target_offset + sizeof(struct compat_xt_standard_target)) != next_offset)
 		return -EINVAL;
@@ -625,6 +636,9 @@ int xt_compat_check_entry_offsets(const void *base, const char *elems,
 
 	return xt_check_entry_match(elems, base + target_offset,
 				    __alignof__(struct compat_xt_entry_match));
+=======
+	return 0;
+>>>>>>> 7ef13f496d3b... netfilter: x_tables: add compat version of xt_check_entry_offsets
 }
 EXPORT_SYMBOL(xt_compat_check_entry_offsets);
 #endif /* CONFIG_COMPAT */
@@ -637,6 +651,7 @@ EXPORT_SYMBOL(xt_compat_check_entry_offsets);
  * @target_offset: the arp/ip/ip6_t->target_offset
  * @next_offset: the arp/ip/ip6_t->next_offset
  *
+<<<<<<< HEAD
  * validates that target_offset and next_offset are sane and that all
  * match sizes (if any) align with the target offset.
  *
@@ -645,6 +660,9 @@ EXPORT_SYMBOL(xt_compat_check_entry_offsets);
  * match structures are aligned, and that the last structure ends where
  * the target structure begins.
  *
+=======
+ * validates that target_offset and next_offset are sane.
+>>>>>>> 7ef13f496d3b... netfilter: x_tables: add compat version of xt_check_entry_offsets
  * Also see xt_compat_check_entry_offsets for CONFIG_COMPAT version.
  *
  * The arp/ip/ip6t_entry structure @base must have passed following tests:
