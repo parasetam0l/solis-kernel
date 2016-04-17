@@ -559,7 +559,7 @@ static int exynos5_i2c_set_timing(struct exynos5_i2c *i2c, int mode)
 	if (mode == HSI2C_HIGH_SPD)
 		t_scl_h = ((clk_cycle + 10) / 3) - 5;
 	else
-		t_scl_h = clk_cycle / 2;
+		t_scl_h = clk_cycle / 3;
 
 	t_scl_l = clk_cycle - t_scl_h;
 
@@ -1776,6 +1776,8 @@ static int exynos5_i2c_remove(struct platform_device *pdev)
 	struct exynos5_i2c *i2c = platform_get_drvdata(pdev);
 
 	i2c_del_adapter(&i2c->adap);
+
+	clk_unprepare(i2c->clk);
 
 	return 0;
 }
