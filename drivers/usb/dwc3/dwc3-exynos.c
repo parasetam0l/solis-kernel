@@ -690,12 +690,6 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, exynos);
 
-	ret = dwc3_exynos_register_phys(exynos);
-	if (ret) {
-		dev_err(dev, "couldn't register PHYs\n");
-		return ret;
-	}
-
 	exynos->dev	= dev;
 
 	exynos->clk = devm_clk_get(dev, "usbdrd30");
@@ -729,6 +723,12 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 			dev_err(dev, "Failed to enable VDD10 supply\n");
 			goto err3;
 		}
+	}
+
+	ret = dwc3_exynos_register_phys(exynos);
+	if (ret) {
+		dev_err(dev, "couldn't register PHYs\n");
+		goto err4;
 	}
 
 	ret = dwc3_exynos_register_phys(exynos);
