@@ -532,7 +532,7 @@ SMB2_sess_setup(const unsigned int xid, struct cifs_ses *ses,
 	u16 blob_length = 0;
 	struct key *spnego_key = NULL;
 	char *security_blob = NULL;
-	char *ntlmssp_blob = NULL;
+	unsigned char *ntlmssp_blob = NULL;
 	bool use_spnego = false; /* else use raw ntlmssp */
 
 	cifs_dbg(FYI, "Session Setup\n");
