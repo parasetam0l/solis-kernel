@@ -1203,6 +1203,7 @@ err_kcontrol:
 
 static int wm_coeff_init_control_caches(struct wm_adsp *dsp)
 {
+
 	struct wm_coeff_ctl *ctl;
 	int ret = 0;
 
