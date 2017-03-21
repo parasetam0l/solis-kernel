@@ -272,7 +272,7 @@ int mbox_send_message(struct mbox_chan *chan, void *mssg)
 		return -EIO;
 	}
 
-	if (chan->cl->tx_block && chan->active_req) {
+	if (chan->cl->tx_block) {
 		unsigned long wait;
 		int ret;
 
