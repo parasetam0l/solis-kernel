@@ -1,0 +1,78 @@
+config MOTOR_DRV_MAX77803
+	default n
+	depends on MFD_MAX77803
+	help
+	  If you say yes here you will get support for the
+	  motor of Maxim MAX77803 PMIC.
+
+config MOTOR_DRV_MAX8997
+	tristate "Maxim MAX8997 motor"
+	default n
+	depends on MFD_MAX8997
+	help
+	  If you say yes here you will get support for the
+	  motor of Maxim MAX8997 PMIC.
+
+config MOTOR_DRV_ISA1000A
+	tristate "ISA1000A motor"
+	default n
+	help
+	  Say Y to enalbe the ISA1000A IC.
+
+config MOTOR_DRV_ISA1200
+	tristate "ISA1200 motor"
+	default n
+	depends on I2C
+	help
+	  Say Y to enalbe the ISA1200 IC.
+
+config MOTOR_DRV_ISA1400
+	tristate "ISA1400 motor"
+	default n
+	depends on I2C
+	help
+	  Say Y to enalbe the ISA1400 IC.
+
+config HAPTIC_ISA1200
+	tristate "ISA1200 motor"
+	default n
+	depends on I2C
+	help
+	  Say Y to enalbe the ISA1200 IC.
+
+config HAPTIC_ISA1400
+	tristate "ISA1400 motor"
+	default n
+	depends on I2C
+	help
+	  Say Y to enalbe the ISA1400 IC.
+
+config DC_MOTOR
+	tristate "DC_Motor"
+	default n
+	help
+	  Say Y to enable DC Motor
+
+config MOTOR_INFO
+	tristate "PRODUCT NAME OF MOTOR"
+	default n
+	help
+	  Say Y to know about motor name
+
+config FF_DC_VIBRATOR
+	tristate "FF_DC_VIBRATOR"
+	default n
+	help
+	 Say Y to enable ff dc vibrator
+
+config MOTOR_DRV_DRV2624
+	tristate "drv2624 motor"
+	default n
+	help
+	 Say Y to enable the drv2624 IC
+
+config MOTOR_DRV_ZH915
+	tristate "zh915 motor"
+	default n
+	help
+	 Say Y to enable the zh915 IC

@@ -1,0 +1,39 @@
+What:		/sys/class/rpmb/
+Date:		Mar 2016
+KernelVersion:	TBD
+Contact:	Tomas Winkler <tomas.winkler@intel.com>
+Description:
+		The rpmb/ class sub-directory belongs to RPMB device class
+
+
+What:		/sys/class/rpmb/rpmbN/
+Date:		Mar 2016
+KernelVersion:	TBD
+Contact:	Tomas Winkler <tomas.winkler@intel.com>
+Description:
+		The /sys/class/rpmb/rpmbN directory is created for
+		each RPMB registered device
+
+What:		/sys/class/rpmb/rpmbN/id
+Date:		Mar 2016
+KernelVersion:	TBD
+Contact:	Tomas Winkler <tomas.winkler@intel.com>
+Description:
+		The /sys/class/rpmb/rpmbN/id file contains device id
+		in a binary form
+
+What:		/sys/class/rpmb/rpmbN/type
+Date:		Mar 2016
+KernelVersion:	TBD
+Contact:	Tomas Winkler <tomas.winkler@intel.com>
+Description:
+		The /sys/class/rpmb/rpmbN/type file contains device
+		underlay storage type technology: EMMC, UFS
+
+What:		/sys/class/rpmb/rpmbN/reliable_wr_cnt
+Date:		Mar 2016
+KernelVersion:	TBD
+Contact:	Tomas Winkler <tomas.winkler@intel.com>
+Description:
+		The /sys/class/rpmb/rpmbN/reliable_wr_cnt file contains
+		number of blocks that can be written in a single request

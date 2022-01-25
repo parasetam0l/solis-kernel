@@ -1,0 +1,8 @@
+menu "Tizen"
+
+config TIZEN
+	bool "Tizen Drivers"
+	---help---
+	  Enable support for various drivers needed on the Tizen platform
+
+endmenu

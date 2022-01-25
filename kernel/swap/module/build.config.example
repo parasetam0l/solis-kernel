@@ -1,0 +1,5 @@
+# Config for build.sh
+
+kernel=<path-to-kernel-sourse>
+toolchain=<path-to-toolchain>
+arch=<architecture>

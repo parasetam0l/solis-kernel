@@ -1,0 +1,207 @@
+/*
+ * Samsung's Exynos7270 SoC sound device tree source
+ *
+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+
+/ {
+	s1403x: s1403x@14880000 {
+		pinctrl-names = "default", "idle";
+		pinctrl-0 = <&i2s_pmic_bus>;
+		pinctrl-1 = <&i2s_pmic_bus_idle> ;
+		status = "okay";
+	};
+
+	i2s0: i2s@148A0000 {
+		samsung,amixer = <0>;
+		status = "okay";
+	};
+
+	eax: eax {
+		status = "disabled";
+	};
+
+	vbatt: fixedregulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "VBATT";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	pinctrl@139B0000 {
+		codec_rst: codec-rst {
+			samsung,pins = "gpf1-0";
+			samsung,pin-function = <1>; /* output */
+			samsung,pin-pud = <3>; /* pull-up */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <1>; /* output1 pdn */
+			samsung,pin-pud-pdn = <3>; /* pull-up pdn */
+		};
+		codec_1p2: codec-1p2 {
+			samsung,pins = "gpd1-4";
+			samsung,pin-function = <1>; /* output */
+			samsung,pin-pud = <0>;
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <3>; /* prev state during powerdown */
+			samsung,pin-pud-pdn = <0>; /* no pull during powerdown */
+		};
+		codec_mclk1: codec-mclk1 {
+			samsung,pins = "gpe0-0";
+			samsung,pin-function = <2>;
+			samsung,pin-pud = <0>;
+			samsung,pin-drv = <2>;
+			samsung,pin-con-pdn = <3>; /* prev state during powerdown */
+			samsung,pin-pud-pdn = <0>; /* no pull during powerdown */
+		};
+		spi1_bus: spi1-bus {
+			samsung,pins = "gpf3-3", "gpf3-2", "gpf3-0";
+			samsung,pin-function = <2>; /* func */
+			samsung,pin-pud = <3>; /* pull-up */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <2>; /* input during powerdown */
+			samsung,pin-pud-pdn = <1>; /* pull-down during powerdown */
+		};
+		spi1_cs_0: spi1-cs-0 {
+			samsung,pins = "gpf3-1";
+			samsung,pin-function = <1>; /* output */
+			samsung,pin-pud = <3>; /* pull-up */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <2>; /* input during powerdown */
+			samsung,pin-pud-pdn = <1>; /* pull-down during powerdown */
+		};
+
+	};
+
+	pinctrl@139F0000 {
+		codec_irq: codec-irq {
+			samsung,pins = "gpa1-4";
+			samsung,pin-function = <0xf>; /* eint */
+			samsung,pin-pud = <3>; /* pull-up */
+		};
+	};
+
+	codec_1p2_reg: vdd_codec_1p2 {
+		compatible = "regulator-fixed";
+		regulator-name = "VDD_CODEC_1P2";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		gpio = <&gpd1 4 0>;
+		startup-delay-us = <5000>;
+		enable-active-high;
+		vin-supply = <&buck4_reg>;
+	};
+
+	spi_1: spi@13900000 {
+		status = "okay";
+		cs-gpios = <&gpf3 1 1>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi1_bus &spi1_cs_0>;
+
+		audio_codec_wm1831: wm1831@0 {
+			spi-max-frequency = <26000000>;
+
+			compatible = "wlf,wm1831";
+			reg = <0x0>;
+			interrupts = <4 0 0>;
+			interrupt-parent = <&gpa1>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			gpio-controller;
+			#gpio-cells = <2>;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&codec_irq &codec_rst &codec_1p2>;
+
+			AVDD-supply = <&ldo3_reg>;
+			DBVDD1-supply = <&ldo3_reg>;
+			CPVDD-supply = <&ldo3_reg>;
+			DCVDD-supply = <&codec_1p2_reg>;
+			SPKVDD-supply = <&vbatt>;
+			MICVDD-supply = <&ldo3_reg>;
+
+			wlf,reset = <&gpf1 0 0>;
+			wlf,micbias1 = <1800 0 1 0 1>;
+			wlf,dmic-ref = <1 0 0 0>;
+			wlf,inmode = <2 0 0 0>;
+
+			adsps {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				adsps@001200 {
+					reg = <0x1200>;
+					firmware {
+						LVVE {
+							wlf,wmfw-file = "lvve";
+							wlf,bin-file = "lvve";
+						};
+						TRACE {
+							wlf,wmfw-file = "trace";
+							wlf,bin-file = "None";
+							wlf,compr-caps = <1 6 0x4 1 8000 16000 48000>;
+						};
+					};
+				};
+				adsps@001300 {
+					reg = <0x1300>;
+					firmware {
+						VOICECONTROL {
+							wlf,wmfw-file = "ez2-control";
+							wlf,bin-file = "ez2-control";
+							wlf,compr-caps = <1 1 0x4 1 16000>;
+						};
+						RX_NBWB {
+							wlf,wmfw-file = "rx-anc-nbwb";
+							wlf,bin-file = "None";
+						};
+					};
+				};
+			};
+
+			controller-data {
+				cs-gpio = <&gpf3 1 1>;
+				samsung,spi-feedback-delay = <1>;
+			};
+		};
+	};
+
+	audio_cp_dummy: cp_dummy {
+			compatible = "samsung,cp_dummy";
+			status = "okay";
+	};
+
+	audio_bt_dummy: bt_dummy {
+			compatible = "samsung,bt_dummy";
+			status = "okay";
+	};
+
+	sound {
+		compatible = "samsung,universal7270-wm1831";
+		samsung,audio-cpu = <&i2s0	/* primary */
+					&audio_cp_dummy
+					&audio_bt_dummy
+					&i2s0	/* secondary */
+					&audio_codec_wm1831
+					>;
+		samsung,audio-codec = <&audio_codec_wm1831
+					&audio_codec_wm1831
+					&audio_codec_wm1831
+					&audio_codec_wm1831
+					&audio_codec_wm1831>;
+
+		samsung,auxdev = <&s1403x>;
+		status = "okay";
+		clock-names = "codec_26m_ap";
+		clocks = <&clock 43>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&codec_mclk1>;
+	};
+};

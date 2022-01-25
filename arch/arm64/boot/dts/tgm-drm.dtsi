@@ -1,0 +1,29 @@
+/*
+ * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/ {
+	tgm_drm: tgm_drv {
+		compatible = "drm,tgm_drv";
+		tgm,drv_name = "tgm";
+		tgm,drv_desc = "Tizen Graphics Manager";
+		tgm,drv_date = "20150707";
+		tgm,drv_major = <1>;
+		tgm,drv_minor = <0>;
+		tgm,drv_patchlevel = <0>;
+		tgm,num_crtcs = <1>;
+	};
+
+	tdm: tdm_pp {
+		compatible = "tdm,tdm_pp";
+	};
+};

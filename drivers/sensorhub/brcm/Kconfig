@@ -1,0 +1,212 @@
+#
+# sensor drivers configuration
+#
+config SENSORS_SYSFS
+	tristate "Sensors sysfs"
+	help
+	  Support sysfs for sensors.
+          If you say yes here you get sysfs support for
+	  sensor factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called sensors_core.
+
+config SENSORS_SSP
+	tristate "Sensors ssp"
+	default n
+	depends on SPI
+	help
+	  ssp driver for sensor hub.
+          If you say yes here you get ssp support for
+	  sensor hub.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_BBD
+	tristate "Sensors ssp brcm"
+	default n
+	depends on SPI
+	help
+	  ssp driver for sensor hub.
+          If you say yes here you get ssp support for
+	  sensor hub.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_SENSORHUB
+	tristate "Sensors ssp sensorhub"
+	default n
+	depends on SPI
+	help
+	  ssp sensor hub driver for sensor hub.
+          If you say yes here you get ssp support for
+	  sensor hub.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_FACTORY
+	tristate "ssp factory"
+	depends on SENSORS_SSP
+	default n
+	help
+	  ssp sensor hub driver for factory test.
+          If you say yes here you can enable fatory drvier for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_ACCELEROMETER_SENSOR
+	tristate "Sensors ssp acceleromter sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, accelererometer sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_GYRO_SENSOR
+	tristate "Sensors ssp gyro sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, gyro sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_MAGNETIC_SENSOR
+	tristate "Sensors ssp magnetic sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, magnetic sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_PRESSURE_SENSOR
+	tristate "Sensors ssp pressure sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, pressure sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_LIGHT_SENSOR
+	tristate "Sensors ssp light sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, light sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_TEMP_HUMID_SENSOR
+	tristate "Sensors ssp temp_humid sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, temp_humid sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+config SENSORS_SSP_SKIN_TEMP
+	tristate "Sensors ssp skin temp sensor"
+	depends on SPI
+	help
+	  If you say yes here, skin temp sensor supported
+	  Two temp sensor will be working
+config SENSORS_SSP_ROT_VECTOR_SENSOR
+	tristate "Sensors ssp rotation vector sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, rotation vector sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_HRM_SENSOR
+	tristate "Sensors ssp hrm sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, hrm sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_UV_SENSOR
+	tristate "Sensors ssp uv sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, uv sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_FRONT_HRM_SENSOR
+	tristate "Sensors ssp front hrm sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, front hrm sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_GSR_SENSOR
+	tristate "Sensors ssp gsr sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, gsr sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_ECG_SENSOR
+	tristate "Sensors ssp ecg sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, ecg sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_GRIP_SENSOR
+	tristate "Sensors ssp grip sensor"
+	default n
+	depends on SPI
+	help
+          If you say yes here, grip sensor supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_LPM_MOTION
+	tristate "Sensors ssp lpm motion"
+	default n
+	depends on SPI
+	help
+          If you say yes here, lpm motion supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config BCM_GPS_LOGGING
+	tristate "Broadcom GPS logging"
+	default n
+	depends on SPI
+	help
+          If you say yes here, lpm motion supported
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_BBD_LEGACY_PATCH
+	bool "Added Broadcom legacy patch-ram (DEVELOPMENT)"
+	depends on SPI
+	help
+	 If you select this, target can be add legacy patch-ram
+	 internally in kernel space. And if you choose its usage
+	 or not in DTS configuration, your target will be use
+	 legacy patch-ram. This will be led to increase memory usage.
+
+config SENSORS_BBD_SPI_PORT
+	int "Broadcom SPI port number"
+	depends on SPI && SENSORS_SSP_BBD
+	default 99
+
+source "drivers/sensorhub/brcm/factory/Kconfig"
+source "drivers/sensorhub/brcm/bbdpl/Kconfig"

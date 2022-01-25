@@ -1,0 +1,15 @@
+#
+# AP-controlled Sensor drivers configuration
+#
+
+menu "AP-controlled Sensor devices"
+
+config SENSORS_CORE
+		depends on !SENSORS_SYSFS
+        bool "Sensors Class Support"
+        help
+          This option enables the sensor sysfs class in /sys/class/sensors.
+          You'll need this to do anything useful with sensorss. If unsure, say N.
+
+source "drivers/sensors/lps22hb/Kconfig"
+endmenu

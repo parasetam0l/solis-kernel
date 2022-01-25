@@ -1,0 +1,73 @@
+config DRM_TGM
+	tristate "TGM supports display rendering and buffer allocation in the Tizen"
+	depends on DRM
+	help
+	  Tizen Graphics Manager composed of TDM and TBM.
+	  TDM show many constiuents on the screen.
+	  TBM can be allocated graphics attribute buffer.
+
+config DRM_TDM
+	bool "TDM shows graphics attribute on the screen"
+	depends on DRM_TGM
+	help
+	  Tizen Display Manager supports display rendering.
+
+config DRM_TDM_IRQ
+	bool "IRQ supports Vsync Interrupt"
+	depends on DRM_TDM
+	help
+	  IRQ supports Vsync Interrupt.
+
+config DRM_TDM_IRQ_EXYNOS
+	bool "Supports Exynos Vsync Interrupt"
+	depends on DRM_TDM_IRQ
+	help
+	  IRQ supports Vsync Interrupt.
+
+config DRM_TDM_DPMS_CTRL
+       bool "DRM TDM DPMS IOCTL"
+       depends on DRM_TDM
+       help
+       Choose this option if you want to use dpms ioctl.
+
+config DRM_TDM_PP
+	bool "Supports PP feature"
+	depends on DRM_TDM
+	help
+	  Supports post-processing feature.
+
+config DRM_TDM_PP_MSC
+	bool "TDM PP MSC"
+	depends on DRM_TDM_PP
+	help
+	  Choose this option if you want to use MSC for PP.
+
+config DRM_TBM
+	bool "TBM allocates graphics buffer"
+	depends on DRM_TGM
+	help
+	  Tizen Buffer Manager supports buffer allocation.
+
+config DRM_TBM_GEM
+	bool "TBM_GEM supports graphics execution memory"
+	depends on DRM_TBM
+	help
+	  GEM supports Graphics buffer.
+
+config DRM_TBM_GEM_ION
+	bool "Supports graphics execution memory based on ION"
+	depends on DRM_TBM_GEM
+	help
+	  GEM supports Graphics buffer.
+
+config DRM_TBM_GEM_DMA_MAPPING
+	bool "Supports graphics execution memory based on DMA Mapping"
+	depends on DRM_TBM_GEM
+	help
+	  GEM supports Graphics buffer.
+
+config DISPLAY_EARLY_DPMS
+	bool "Display early DPMS"
+	depends on DRM_TGM
+	help
+	  Choose this option if you want to use early dpms feature.

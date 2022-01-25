@@ -1,0 +1,39 @@
+/*
+ * Samsung's Exynos7270 device tree source for eSE SPI interface
+ *
+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+ *              http://www.samsung.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+
+/ {
+	spi_0: spi@100C0000 {
+		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi0_bus &spi0_cs_0>;
+
+		ese_spi@0 {
+			compatible = "p61";
+			reg = <0>;
+			spi-max-frequency = <10000000>;
+
+			gpio-cotroller;
+			#gpio-cells = <2>;
+
+			p61-mosipin = <&gpc7 3 0>;
+			p61-misopin = <&gpc7 2 0>;
+			p61-cspin = <&gpc7 1 0>;
+			p61-clkpin = <&gpc7 0 0>;
+
+			controller-data {
+				cs-gpio = <&gpc7 1 0>;
+				samsung,spi-feedback-delay = <0>;
+			};
+		};
+	};
+};

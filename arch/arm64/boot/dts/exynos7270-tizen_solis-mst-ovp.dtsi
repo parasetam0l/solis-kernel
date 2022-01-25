@@ -1,0 +1,48 @@
+/*
+ * Samsung's Exynos7270 SoC sound device tree source
+ *
+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+ *              http://www.samsung.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+
+/ {
+        sec-mst{
+                compatible = "sec-mst";
+                sec-mst,mst-pwr-gpio = <&gpc3 2 0>;
+                sec-mst,mst-en-gpio = <&gpc3 1 0>;
+                sec-mst,mst-data-gpio = <&gpc3 0 0>;
+
+                pinctrl-names = "default";
+                pinctrl-0 = <&mst_pwr_en &mst_en &mst_data>;
+        };
+
+        pinctrl@139D0000 {
+                mst_pwr_en: sec-mst,mst-pwr-gpio {
+                        samsung,pins ="gpc3-2";
+                        samsung,pin-function = <0>;
+                        samsung,pin-pud = <0>;
+                        samsung,pin-con-pdn = <2>;
+                        samsung,pin-pud-pdn = <0>;
+                };
+
+                mst_en: sec-mst,mst-en-gpio {
+                        samsung,pins ="gpc3-1";
+                        samsung,pin-function = <1>;
+                        samsung,pin-pud = <1>;
+                        samsung,pin-con-pdn = <2>;
+                        samsung,pin-pud-pdn = <1>;
+                };
+
+                mst_data: sec-mst,mst-data-gpio {
+                        samsung,pins ="gpc3-0";
+                        samsung,pin-function = <1>;
+                        samsung,pin-pud = <1>;
+                        samsung,pin-con-pdn = <2>;
+                        samsung,pin-pud-pdn = <1>;
+                };
+        };
+};

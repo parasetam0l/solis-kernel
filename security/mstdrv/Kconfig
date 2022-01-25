@@ -1,0 +1,6 @@
+#
+config MST_LDO
+        bool "MST LDO kernel driver"
+        default n
+        help
+          This enables the MST LDO kernel driver.

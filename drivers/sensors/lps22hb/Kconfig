@@ -1,0 +1,21 @@
+config INPUT_LPS22HB
+	tristate "STMicroelectronics LPS22HB sensor"
+	depends on (I2C || SPI) && SYSFS
+	help
+	   This driver support the STMicroelectronics LPS22HB sensor.
+	   To compile this driver as a module, choose M here. The module
+	   will be called lps22hb.
+
+config INPUT_LPS22HB_I2C
+	bool "Use I2C interface for LPS22HB"
+	depends on INPUT_LPS22HB
+	depends on I2C
+	help
+	  Use I2C insterface for LPS22HB sensor
+
+config INPUT_LPS22HB_SPI
+	bool "Use SPI interface for LPS22HB"
+	depends on INPUT_LPS22HB
+	depends on SPI
+	help
+	  Use SPI insterface for LPS22HB sensor

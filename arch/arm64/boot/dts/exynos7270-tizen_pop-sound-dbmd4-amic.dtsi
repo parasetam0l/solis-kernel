@@ -1,0 +1,159 @@
+/*
+ * Samsung's Exynos7270 SoC sound device tree source
+ *
+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+ *      http://www.samsung.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+/ {
+	pinctrl@139F0000 {
+		voice_int: voice_int {
+			samsung,pins = "gpa1-4";
+			samsung,pin-function = <0xf>; /* eint */
+			samsung,pin-pud = <0>; /* disable */
+			samsung,pin-con-pdn = <0x3>; /* prev during pdn */
+			samsung,pin-pud-pdn = <0>; /* disable during pdn */
+		};
+	};
+
+	pinctrl@139B0000 {
+		voice_wake: voice_wake {
+			samsung,pins = "gpe0-0";
+			samsung,pin-function = <1>; /* output */
+			samsung,pin-pud = <3>; /* pull-up */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <1>; /* output1 pdn */
+			samsung,pin-pud-pdn = <3>; /* pull-up pdn */
+		};
+		voice_rst: voice_rst {
+			samsung,pins = "gpf1-0";
+			samsung,pin-function = <1>; /* output */
+			samsung,pin-val = <0>; /* init value */
+			samsung,pin-pud = <1>; /* pull-down */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <1>; /* output1 pdn */
+			samsung,pin-pud-pdn = <3>; /* pull-up pdn */
+		};
+		spi1_bus: spi1-bus {
+			samsung,pins = "gpf3-0";
+			samsung,pin-function = <2>; /* func */
+			samsung,pin-pud = <0>; /* Disable */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <2>; /* input during powerdown */
+			samsung,pin-pud-pdn = <1>; /* pull-down during pdn */
+		};
+		spi1_bus2: spi1-bus2 {
+			samsung,pins = "gpf3-3", "gpf3-2";
+			samsung,pin-function = <2>; /* func */
+			samsung,pin-pud = <0>; /* Disable */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <2>; /* input during powerdown */
+			samsung,pin-pud-pdn = <0>; /* disable during pdn */
+		};
+		spi1_cs_0: spi1-cs-0 {
+			samsung,pins = "gpf3-1";
+			samsung,pin-function = <1>; /* output */
+			samsung,pin-pud = <3>; /* pull-up */
+			samsung,pin-drv = <0>;
+			samsung,pin-con-pdn = <1>; /* output High during pdn */
+			samsung,pin-pud-pdn = <3>; /* pull-up during pdn */
+		};
+	};
+
+	spi_1: spi@13900000 {
+		status = "okay";
+		samsung,spi-src-clk = <0>;
+		num-cs = <1>;
+
+		dma-mode;
+		dmas = <&pdma0 17
+			&pdma0 16>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi1_bus2 &spi1_bus &spi1_cs_0>;
+
+		dbmd4_spi:dbmd4_interface@0x0  {
+			compatible = "dspg,dbmd4-spi";
+			reg = <0>;
+			spi-max-frequency = <12000000>;
+			read-chunk-size  = <0x2000> ;
+			write-chunk-size = <0x40000> ;
+			dma_min_buffer_size = <0>;
+			controller-data {
+				cs-gpio = <&gpf3 1 0>;
+				samsung,spi-feedback-delay = <2>;
+			};
+		};
+	};
+
+	codec: dbmdx@0 {
+		status = "okay";
+		compatible = "dspg,dbmdx-codec";
+		pinctrl-names = "default";
+		pinctrl-0 = <&voice_int &voice_wake &voice_rst>;
+		sv-gpio = <&gpa1 4 0>; /* VOICE_INT */
+		wakeup-gpio = <&gpe0 0 0>; /* VOICE_WAKE */
+		reset-gpio = <&gpf1 0 0>; /* VOICE_RST */
+
+		dbmdx_regulator-supply = <&ldo5_reg>;
+		dbmdx_mic_bias-supply = <&ldo14_reg>;
+
+		auto_buffering = <1>;
+		multi-interface-support = <1>;
+		cd-interfaces = <&dbmd4_spi >;
+		va-interfaces = <0 0 0 0>;
+		feature-va; /* enable VA */
+		va-firmware-name = "dbmd4_va_fw.bin";
+		va-config = <0x80000000
+			     0x80000000
+			     0x80000000
+			     0x80290020
+			     0x802210E0
+			     0x80158E8E
+			     0x801b0020
+			     0x80230020
+			     0x801A0011
+			     0x80103015
+			     0x80000000
+			     0x80000000
+			     0x80000000>;
+		va-speeds = <0x0000 0 0 1000000
+			     0x0000 0 0 3000000
+			     0x0000 0 0 7000000 >;
+		va-mic-config = <0xf041 0x1044 0x0008>;
+		va-mic-mode = <4>; /* 0 - DMIC 0, 4 - AMIC */
+/*
+ *		digital_mic_digital_gain = <0x14>;
+ *		analog_mic_analog_gain = <0x3>;
+ *		analog_mic_digital_gain = <0x14>;
+ */
+		master-clk-rate = <32768>;
+		/* constant-clk-rate = <32768>; */
+		firmware_id = <0xdbd4>;
+		use_gpio_for_wakeup = <1>; /* Use wakeup gpio */
+		wakeup_set_value = <0>;  /* Value to write to wakeup gpio */
+		auto_detection = <1>;
+		detection_buffer_channels = <0>;
+		min_samples_chunk_size = <128>;
+		pcm_streaming_mode = <1>;
+		boot_options = <0x200>; /* Verify chip id */
+		send_uevent_on_detection = <0>;
+		send_uevent_after_buffering = <0>;
+		detection_after_buffering = <0>;
+		va_backlog_length = <2>;
+		amodel_options = <0>;
+	};
+
+	dbmdx-snd-soc-platform {
+		compatible = "dspg,dbmdx-snd-soc-platform";
+	};
+
+	snd-dbmdx-mach-drv {
+		compatible = "dspg,snd-dbmdx-mach-drv";
+	};
+
+};
+

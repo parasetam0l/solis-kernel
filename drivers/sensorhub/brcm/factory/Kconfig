@@ -1,0 +1,156 @@
+#
+# sensor drivers configuration
+#
+config SENSORS_SSP_BMI168
+	tristate "Sensors ssp bmi168"
+	default n
+	depends on SPI
+	help
+	  bmi160 file for factory test in ssp driver.
+          If you say yes here you get bmi168 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_K6DS3TR
+	tristate "Sensors ssp k6ds3tr"
+	default n
+	depends on SPI
+	help
+	  k6ds3tr file for factory test in ssp driver.
+          If you say yes here you get k6ds3tr support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_LSM6DSL
+	tristate "Sensors ssp lsm6dsl"
+	default n
+	depends on SPI
+	help
+	  lsm6dsl file for factory test in ssp driver.
+          If you say yes here you get lsm6dsl support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_YAS537
+	tristate "Sensors ssp yas537"
+	default n
+	depends on SPI
+	help
+	  yas537 file for factory test in ssp driver.
+          If you say yes here you get yas537 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_LPS25H
+	tristate "Sensors ssp lps25h"
+	default n
+	depends on SPI
+	help
+	  lps25h file for factory test in ssp driver.
+          If you say yes here you get lps25h support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_TSL2584
+	tristate "Sensors ssp tsl2584"
+	default n
+	depends on SPI
+	help
+	  tsl2584 file for factory test in ssp driver.
+          If you say yes here you get tsl2584 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_CM3323
+	tristate "Sensors ssp cm3323"
+	default n
+	depends on SPI
+	help
+	  cm3323 file for factory test in ssp driver.
+          If you say yes here you get cm3323 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_SHTW1
+	tristate "Sensors ssp shtw1"
+	default n
+	depends on SPI
+	help
+	  shtw1 file for factory test in ssp driver.
+          If you say yes here you get shtw1 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_AD45251
+	tristate "Sensors ssp ad45251"
+	default n
+	depends on SPI
+	help
+	  adpd45251 file for factory test in ssp driver.
+          If you say yes here you get ad45251 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_PPS960
+	tristate "Sensors ssp pps960"
+	default n
+	depends on SPI
+	help
+	  pps960 file for factory test in ssp driver.
+          If you say yes here you get pps960 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_MAX86902
+	tristate "Sensors ssp max86902"
+	default n
+	depends on SPI
+	help
+	  max86902 file for factory test in ssp driver.
+          If you say yes here you get max86902 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_HM121
+	tristate "Sensors ssp hm121"
+	default n
+	depends on SPI
+	help
+	  hm121 file for factory test in ssp driver.
+          If you say yes here you get hm121 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_ADS1292
+	tristate "Sensors ssp ads1292"
+	default n
+	depends on SPI
+	help
+	  ads1292 file for factory test in ssp driver.
+          If you say yes here you get ads1292 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.
+
+config SENSORS_SSP_SX9310
+	tristate "Sensors ssp sx9310"
+	default n
+	depends on SPI
+	help
+	  sx9310 file for factory test in ssp driver.
+          If you say yes here you get sx9310 support for
+	  factory test.
+	  To compile this driver as a module, choose M here: the
+	  module will be called ssp.

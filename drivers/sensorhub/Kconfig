@@ -1,0 +1,8 @@
+menu "Sensor HUB Drivers"
+
+#
+# sensor drivers configuration
+#
+
+source "drivers/sensorhub/brcm/Kconfig"
+endmenu
