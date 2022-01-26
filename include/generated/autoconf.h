@@ -1,7 +1,7 @@
 /*
  *
  * Automatically generated file; DO NOT EDIT.
- * Linux/arm64 3.18.37 Kernel Configuration
+ * Linux/arm64 3.18.38 Kernel Configuration
  *
  */
 #define CONFIG_RING_BUFFER 1
