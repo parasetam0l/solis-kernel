@@ -2269,21 +2269,20 @@ static bool smp_ltk_encrypt(struct l2cap_conn *conn, u8 sec_level)
 	return true;
 }
 
-bool smp_sufficient_security(struct hci_conn *hcon, u8 sec_level,
-			     enum smp_key_pref key_pref)
+bool smp_sufficient_security(struct hci_conn *hcon, u8 sec_level)
 {
 	if (sec_level == BT_SECURITY_LOW)
 		return true;
 
-	/* If we're encrypted with an STK but the caller prefers using
-	 * LTK claim insufficient security. This way we allow the
-	 * connection to be re-encrypted with an LTK, even if the LTK
-	 * provides the same level of security. Only exception is if we
-	 * don't have an LTK (e.g. because of key distribution bits).
+	/* If we're encrypted with an STK always claim insufficient
+	 * security. This way we allow the connection to be re-encrypted
+	 * with an LTK, even if the LTK provides the same level of
+	 * security. Only exception is if we don't have an LTK (e.g.
+	 * because of key distribution bits).
 	 */
-	if (key_pref == SMP_USE_LTK &&
-	    test_bit(HCI_CONN_STK_ENCRYPT, &hcon->flags) &&
-	    hci_find_ltk(hcon->hdev, &hcon->dst, hcon->dst_type, hcon->role))
+	if (test_bit(HCI_CONN_STK_ENCRYPT, &hcon->flags) &&
+	    hci_find_ltk_by_addr(hcon->hdev, &hcon->dst, hcon->dst_type,
+				 hcon->role))
 		return false;
 
 	if (hcon->sec_level >= sec_level)
@@ -2373,7 +2372,7 @@ int smp_conn_security(struct hci_conn *hcon, __u8 sec_level)
 	if (!hci_dev_test_flag(hcon->hdev, HCI_LE_ENABLED))
 		return 1;
 
-	if (smp_sufficient_security(hcon, sec_level, SMP_USE_LTK))
+	if (smp_sufficient_security(hcon, sec_level))
 		return 1;
 
 	if (sec_level > hcon->pending_sec_level)

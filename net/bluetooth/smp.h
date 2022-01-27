@@ -181,8 +181,7 @@ enum smp_key_pref {
 
 /* SMP Commands */
 void smp_cancel_pairing(struct hci_conn *hcon);
-bool smp_sufficient_security(struct hci_conn *hcon, u8 sec_level,
-			     enum smp_key_pref key_pref);
+bool smp_sufficient_security(struct hci_conn *hcon, u8 sec_level);
 int smp_conn_security(struct hci_conn *hcon, __u8 sec_level);
 int smp_user_confirm_reply(struct hci_conn *conn, u16 mgmt_op, __le32 passkey);
 

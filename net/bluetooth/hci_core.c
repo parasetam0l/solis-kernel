@@ -2373,6 +2373,20 @@ struct smp_ltk *hci_find_ltk(struct hci_dev *hdev, bdaddr_t *bdaddr,
 	return NULL;
 }
 
+struct smp_ltk *hci_find_ltk_by_addr(struct hci_dev *hdev, bdaddr_t *bdaddr,
+				     u8 addr_type, u8 role)
+{
+	struct smp_ltk *k;
+
+	list_for_each_entry(k, &hdev->long_term_keys, list)
+		if (addr_type == k->bdaddr_type &&
+		    bacmp(bdaddr, &k->bdaddr) == 0 &&
+		    ltk_role(k->type) == role)
+			return k;
+
+	return NULL;
+}
+
 struct smp_irk *hci_find_irk_by_rpa(struct hci_dev *hdev, bdaddr_t *rpa)
 {
 	struct smp_irk *irk;
