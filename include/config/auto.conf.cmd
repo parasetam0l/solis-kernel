@@ -1000,7 +1000,7 @@ deps_config := \
 include/config/auto.conf: \
 	$(deps_config)
 
-ifneq "$(KERNELVERSION)" "3.18.58"
+ifneq "$(KERNELVERSION)" "3.18.62"
 include/config/auto.conf: FORCE
 endif
 ifneq "$(ARCH)" "arm64"

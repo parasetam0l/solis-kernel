@@ -52,3 +52,5 @@ if [ "$?" != "0" ]; then
 fi
 
 echo $RELEASE_IMAGE
+
+make kernelversion
