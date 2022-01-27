@@ -56,6 +56,26 @@ struct hci_pinfo {
 	unsigned long     flags;
 };
 
+void hci_sock_set_flag(struct sock *sk, int nr)
+{
+	set_bit(nr, &hci_pi(sk)->flags);
+}
+
+void hci_sock_clear_flag(struct sock *sk, int nr)
+{
+	clear_bit(nr, &hci_pi(sk)->flags);
+}
+
+int hci_sock_test_flag(struct sock *sk, int nr)
+{
+	return test_bit(nr, &hci_pi(sk)->flags);
+}
+
+unsigned short hci_sock_get_channel(struct sock *sk)
+{
+	return hci_pi(sk)->channel;
+}
+
 static inline int hci_test_bit(int nr, const void *addr)
 {
 	return *((const __u32 *) addr + (nr >> 5)) & ((__u32) 1 << (nr & 31));
