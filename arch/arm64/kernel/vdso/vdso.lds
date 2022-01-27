@@ -1,7 +1,7 @@
 /*
  *
  * Automatically generated file; DO NOT EDIT.
- * Linux/arm64 3.18.96 Kernel Configuration
+ * Linux/arm64 3.18.100 Kernel Configuration
  *
  */
 /*
