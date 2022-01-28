@@ -48,7 +48,7 @@ fi
 
 cp -a ${BOOT_PATH}/${DZIMAGE} ${BOOT_PATH}/${DZIMAGE_RECOVERY}
 
-RELEASE_IMAGE=GearS3_Kernel_${RELEASE_DATE}.tar
+RELEASE_IMAGE=GearS3_Android_Kernel_${RELEASE_DATE}.tar
 
 tar cf $RELEASE_IMAGE -C $BOOT_PATH $DZIMAGE_RECOVERY
 if [ "$?" != "0" ]; then
