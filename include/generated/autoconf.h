@@ -1,7 +1,7 @@
 /*
  *
  * Automatically generated file; DO NOT EDIT.
- * Linux/arm64 3.18.135 Kernel Configuration
+ * Linux/arm64 3.18.140 Kernel Configuration
  *
  */
 #define CONFIG_RING_BUFFER 1
@@ -64,6 +64,7 @@
 #define CONFIG_SQUASHFS_FILE_CACHE 1
 #define CONFIG_DYNAMIC_DEBUG 1
 #define CONFIG_HAVE_MEMORY_PRESENT 1
+#define CONFIG_LDISC_AUTOLOAD 1
 #define CONFIG_FIB_RULES 1
 #define CONFIG_RT_GROUP_SCHED 1
 #define CONFIG_IP6_NF_MANGLE 1

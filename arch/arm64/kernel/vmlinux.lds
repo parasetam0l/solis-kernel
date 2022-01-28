@@ -1,7 +1,7 @@
 /*
  *
  * Automatically generated file; DO NOT EDIT.
- * Linux/arm64 3.18.135 Kernel Configuration
+ * Linux/arm64 3.18.140 Kernel Configuration
  *
  */
 /*
@@ -460,6 +460,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/* const.h: Macros for dealing with constants.  */
 /* PAGE_SHIFT determines the page size */
 /*
  * The idmap and swapper page tables need some space reserved in the kernel

@@ -641,6 +641,7 @@ struct l2cap_conn {
 	__u32			feat_mask;
 	__u8			remote_fixed_chan;
 	__u8			local_fixed_chan;
+	bool			hs_enabled;
 
 	__u8			info_state;
 	__u8			info_ident;
