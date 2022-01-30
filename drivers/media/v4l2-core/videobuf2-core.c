@@ -30,11 +30,6 @@
 #include <media/v4l2-common.h>
 #include <media/videobuf2-core.h>
 
-#ifdef CONFIG_DRM_DMA_SYNC
-#include "tdm.h"
-#endif
-
-
 static int debug;
 module_param(debug, int, 0644);
 
@@ -352,14 +347,13 @@ static int __vb2_queue_alloc(struct vb2_queue *q, enum v4l2_memory memory,
 	unsigned int buffer;
 	struct vb2_buffer *vb;
 	int ret;
-#ifdef CONFIG_SYNC
+
 	q->timeline_max = 0;
 	q->timeline = sw_sync_timeline_create("vb2");
-	if (IS_ENABLED(CONFIG_SW_SYNC) && !q->timeline) {
+	if (!q->timeline) {
 		dprintk(1, "Failed to create timeline\n");
 		return 0;
 	}
-#endif
 
 	for (buffer = 0; buffer < num_buffers; ++buffer) {
 		/* Allocate videobuf buffer structures */
@@ -554,12 +548,11 @@ static int __vb2_queue_free(struct vb2_queue *q, unsigned int buffers)
 		q->memory = 0;
 		INIT_LIST_HEAD(&q->queued_list);
 	}
-#ifdef CONFIG_SYNC
+
 	if (q->timeline) {
 		sync_timeline_destroy(&q->timeline->obj);
 		q->timeline = NULL;
 	}
-#endif
 
 	return 0;
 }
@@ -1221,18 +1214,7 @@ void vb2_buffer_done(struct vb2_buffer *vb, enum vb2_buffer_state state)
 	if (state != VB2_BUF_STATE_QUEUED)
 		list_add_tail(&vb->done_entry, &q->done_list);
 	atomic_dec(&q->owned_by_drv_count);
-#ifdef CONFIG_SYNC
 	sw_sync_timeline_inc(q->timeline, 1);
-#endif
-#ifdef CONFIG_DRM_DMA_SYNC
-		if (!vb->fence)
-			dprintk(1, "%s:failed to send signal\n", __func__);
-		else {
-			tdm_fence_signal(vb->fence_dev, vb->fence);
-			vb->fence = NULL;
-		}
-#endif
-
 	spin_unlock_irqrestore(&q->done_lock, flags);
 
 	if (state == VB2_BUF_STATE_QUEUED)
@@ -1648,9 +1630,7 @@ static int __buf_prepare(struct vb2_buffer *vb, const struct v4l2_buffer *b)
 	vb->v4l2_buf.timestamp.tv_usec = 0;
 	vb->v4l2_buf.sequence = 0;
 
-#ifdef CONFIG_SYNC
-	if (IS_ENABLED(CONFIG_SYNC) && !!(b->flags & V4L2_BUF_FLAG_USE_SYNC) &&
-						((int)b->reserved >= 0)) {
+	if (!!(b->flags & V4L2_BUF_FLAG_USE_SYNC) && ((int)b->reserved >= 0)) {
 		vb->acquire_fence = sync_fence_fdget((int)b->reserved);
 		if (!vb->acquire_fence) {
 			dprintk(1, "failed to import fence fd %u\n",
@@ -1658,7 +1638,6 @@ static int __buf_prepare(struct vb2_buffer *vb, const struct v4l2_buffer *b)
 			return -EINVAL;
 		}
 	}
-#endif
 
 	switch (q->memory) {
 	case V4L2_MEMORY_MMAP:
@@ -1820,7 +1799,7 @@ static int vb2_start_streaming(struct vb2_queue *q)
 	WARN_ON(!list_empty(&q->done_list));
 	return ret;
 }
-#ifdef CONFIG_SYNC
+
 static int __allocate_acquire_fence(struct vb2_queue *q, struct vb2_buffer *vb,
 				     bool use_sync)
 {
@@ -1856,7 +1835,6 @@ static int __allocate_acquire_fence(struct vb2_queue *q, struct vb2_buffer *vb,
 
 	return 0;
 }
-#endif
 
 static int vb2_internal_qbuf(struct vb2_queue *q, struct v4l2_buffer *b)
 {
@@ -1911,14 +1889,11 @@ static int vb2_internal_qbuf(struct vb2_queue *q, struct v4l2_buffer *b)
 	 */
 	if (q->start_streaming_called)
 		__enqueue_in_driver(vb);
-#ifdef CONFIG_SYNC
-	if (IS_ENABLED(CONFIG_SYNC)) {
-		ret = __allocate_acquire_fence(q, vb,
+
+	ret = __allocate_acquire_fence(q, vb,
 				!!(b->flags & V4L2_BUF_FLAG_USE_SYNC));
-		if (ret)
-			return ret;
-	}
-#endif
+	if (ret)
+		return ret;
 
 	/* Fill buffer information for the userspace */
 	__fill_v4l2_buffer(vb, b);
@@ -2235,24 +2210,13 @@ static void __vb2_queue_cancel(struct vb2_queue *q)
 	q->queued_count = 0;
 	q->error = 0;
 
-#ifdef CONFIG_SYNC
-	if (IS_ENABLED(CONFIG_SYNC)) {
-		list_for_each_entry(vb, &q->queued_list, queued_entry) {
-			if (vb->acquire_fence) {
-				sync_fence_put(vb->acquire_fence);
-				vb->acquire_fence = NULL;
-			}
-		}
-	}
-#endif
-#ifdef CONFIG_DRM_DMA_SYNC
 	list_for_each_entry(vb, &q->queued_list, queued_entry) {
-		if (vb->fence) {
-			tdm_fence_signal(vb->fence_dev, vb->fence);
-			vb->fence = NULL;
+		if (vb->acquire_fence) {
+			sync_fence_put(vb->acquire_fence);
+			vb->acquire_fence = NULL;
 		}
 	}
-#endif
+
 	/*
 	 * Remove all buffers from videobuf's list...
 	 */

@@ -98,4 +98,8 @@ config DECON_EVENT_LOG
         depends on DEBUG_INFO && EXYNOS_DECON_7570
         default y
 
+config EXYNOS_MIPI_DSI_ENABLE_EARLY
+	bool "Samsung Exynos MIPI-DSI Driver ENABLE EARLY"
+	default n
+
 source "drivers/video/fbdev/exynos/decon_7570/panels/Kconfig"

@@ -184,7 +184,7 @@ void dsim_reg_enable_qchannel(u32 id, u32 en);
 int dsim_reg_wait_hs_clk_ready(u32 id);
 void dsim_reg_set_fifo_ctrl(u32 id, u32 cfg);
 void dsim_reg_force_dphy_stop_state(u32 id, u32 en);
-void dsim_reg_wr_tx_header(u32 id, u32 data_id, unsigned long data0, u32 data1);
+void dsim_reg_wr_tx_header(u32 id, u32 data_id, u32 data0, u32 data1);
 void dsim_reg_wr_tx_payload(u32 id, u32 payload);
 void dsim_reg_enter_ulps(u32 id, u32 enter);
 void dsim_reg_exit_ulps(u32 id, u32 exit);

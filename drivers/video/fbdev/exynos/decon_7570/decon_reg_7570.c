@@ -223,13 +223,17 @@ void decon_reg_set_vclk_divider(u32 id, u32 denom, u32 num)
 		return;
 	}
 
-	val = VCLKCON1_DENOM_VALUE_OF_CLK_F(denom - 1)
-		| VCLKCON1_NUM_VALUE_OF_CLK_F(num - 1);
+	num = num - 1;
+	denom = denom - 1;
+
+	val = VCLKCON1_DENOM_VALUE_OF_CLK_F(denom)
+			| VCLKCON1_NUM_VALUE_OF_CLK_F(num);
 
 	/* VCLK controlled by DECON */
-	decon_write_mask(id, VCLKCON1, val, VCLKCON1_DENOM_VALUE_OF_CLK_F_MASK | VCLKCON1_NUM_VALUE_OF_CLK_F_MASK);
+	decon_write_mask(id, VCLKCON1, val, VCLKCON1_DENOM_VALUE_OF_CLK_F_MASK|VCLKCON1_NUM_VALUE_OF_CLK_F_MASK);
 	decon_dbg("%s(%d), VCLKCON1 is 0x%x\n", __func__, __LINE__, decon_read(id, VCLKCON1));
 }
+
 
 void decon_reg_update_standalone(u32 id)
 {
@@ -310,6 +314,7 @@ int decon_reg_wait_linecnt_is_zero_timeout(u32 id, int dsi_idx,
 
 	if (!cnt) {
 		decon_err("wait timeout linecount is zero(%u)\n", linecnt);
+		DISP_SS_DUMP(DISP_DUMP_LINECNT_ZERO);
 		return -EBUSY;
 	}
 
@@ -412,9 +417,9 @@ void decon_reg_init(u32 id, enum decon_dsi_mode dsi_mode,
 	decon_reg_set_clkgate_mode(id, 0);
 
 	if (psr->psr_mode == DECON_MIPI_COMMAND_MODE)
-		decon_reg_set_vclk_divider(id, 1, 1);	/* bypass decon divider */
+		decon_reg_set_vclk_divider(id, 1, 1); /* bypass decon divider */
 	else
-		decon_reg_set_vclk_divider(id, p->decon_clk->vclk_denom, p->decon_clk->vclk_num);		/* set num/denom of decon divider */
+		decon_reg_set_vclk_divider(id, p->decon_clk->vclk_denom, p->decon_clk->vclk_num);  /* set num/denom of decon divider */
 
 	decon_reg_blend_alpha_bits(id, BLENDCON_NEW_8BIT_ALPHA_VALUE);
 	decon_reg_set_vidout(id, psr, dsi_mode, 1);
@@ -449,9 +454,9 @@ void decon_reg_init_probe(u32 id, enum decon_dsi_mode dsi_mode,
 	decon_reg_set_clkgate_mode(id, 0);
 
 	if (psr->psr_mode == DECON_MIPI_COMMAND_MODE)
-		decon_reg_set_vclk_divider(id, 1, 1);	/* bypass decon divider */
+		decon_reg_set_vclk_divider(id, 1, 1); /* bypass decon divider */
 	else
-		decon_reg_set_vclk_divider(id, p->decon_clk->vclk_denom, p->decon_clk->vclk_num);		/* set num/denom of decon divider */
+		decon_reg_set_vclk_divider(id, p->decon_clk->vclk_denom, p->decon_clk->vclk_num);  /* set num/denom of decon divider */
 
 	decon_reg_blend_alpha_bits(id, BLENDCON_NEW_8BIT_ALPHA_VALUE);
 	decon_reg_set_vidout(id, psr, dsi_mode, 1);
@@ -638,16 +643,21 @@ int decon_reg_wait_for_update_timeout(u32 id, unsigned long timeout)
 {
 	unsigned long delay_time = 100;
 	unsigned long cnt = timeout / delay_time;
+	struct decon_device *decon = get_decon_drvdata(id);
 
-	while ((decon_read(id, DECON_UPDATE) & DECON_UPDATE_STANDALONE_F) &&
-				--cnt)
+	while ((decon_read(id, DECON_UPDATE) & DECON_UPDATE_STANDALONE_F) && --cnt) {
+		if (decon->pdata->psr_mode == DECON_MIPI_COMMAND_MODE && decon->ignore_vsync)
+			goto wait_exit;
+
 		udelay(delay_time);
+	}
 
 	if (!cnt) {
 		decon_err("timeout of updating decon registers\n");
 		return -EBUSY;
 	}
 
+wait_exit:
 	return 0;
 }
 

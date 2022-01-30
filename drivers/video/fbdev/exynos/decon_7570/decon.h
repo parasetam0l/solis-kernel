@@ -29,6 +29,7 @@
 #include "regs-decon.h"
 #include "decon_common.h"
 #include "./panels/decon_lcd.h"
+#include "decon_abd.h"
 
 extern struct ion_device *ion_exynos;
 extern struct decon_device *decon_int_drvdata;
@@ -54,7 +55,7 @@ extern int decon_log_level;
 #define MAX_DECON_PADS		4
 
 #define MAX_BUF_PLANE_CNT	3
-#define DECON_ENTER_LPD_CNT	1
+#define DECON_ENTER_LPD_CNT	3
 #define MIN_BLK_MODE_WIDTH	144
 #define MIN_BLK_MODE_HEIGHT	10
 
@@ -70,7 +71,6 @@ extern int decon_log_level;
 #define DRM_DEV_DECON		3
 #define DECON_CFW_OFFSET	3
 
-#define MAX_FRM_DONE_WAIT	34
 
 #define EVT_TYPE_INT			BIT(31)
 #define EVT_TYPE_IOCTL			BIT(30)
@@ -90,7 +90,7 @@ extern int decon_log_level;
 #define decon_win_update_dbg(fmt, ...)					\
 	do {								\
 		if (decon_log_level >= DECON_LOG_LEVEL_DBG)				\
-			pr_info(pr_fmt(fmt), ##__VA_ARGS__);		\
+			pr_info(pr_fmt("decon: " fmt), ##__VA_ARGS__);		\
 	} while (0)
 #else
 #define decon_win_update_dbg(fmt, ...) (while (0))
@@ -99,25 +99,25 @@ extern int decon_log_level;
 #define decon_err(fmt, ...)							\
 	do {									\
 		if (decon_log_level >= DECON_LOG_LEVEL_ERR)					\
-			pr_err(pr_fmt(fmt), ##__VA_ARGS__);			\
+			pr_err(pr_fmt("decon: " fmt), ##__VA_ARGS__);			\
 	} while (0)
 
 #define decon_warn(fmt, ...)							\
 	do {									\
 		if (decon_log_level >= DECON_LOG_LEVEL_WARN)					\
-			pr_warn(pr_fmt(fmt), ##__VA_ARGS__);			\
+			pr_warn(pr_fmt("decon: " fmt), ##__VA_ARGS__);			\
 	} while (0)
 
 #define decon_info(fmt, ...)							\
 	do {									\
 		if (decon_log_level >= DECON_LOG_LEVEL_INFO)					\
-			pr_info(pr_fmt(fmt), ##__VA_ARGS__);			\
+			pr_info(pr_fmt("decon: " fmt), ##__VA_ARGS__);			\
 	} while (0)
 
 #define decon_dbg(fmt, ...)							\
 	do {									\
 		if (decon_log_level >= DECON_LOG_LEVEL_DBG)					\
-			pr_info(pr_fmt(fmt), ##__VA_ARGS__);			\
+			pr_info(pr_fmt("decon: " fmt), ##__VA_ARGS__);			\
 	} while (0)
 
 /*
@@ -194,12 +194,7 @@ struct decon_dma_buf_data {
 	struct dma_buf_attachment	*attachment;
 	struct sg_table			*sg_table;
 	dma_addr_t			dma_addr;
-#ifdef CONFIG_SYNC
 	struct sync_fence		*fence;
-#endif
-#ifdef CONFIG_DRM_DMA_SYNC
-	struct fence		*fence;
-#endif
 };
 
 struct decon_win_rect {
@@ -381,7 +376,7 @@ struct decon_win_config {
 		__u32 color;
 		struct {
 			int				fd_idma[3];
-			int				fence_fd;	/* FixMe: CONFIG_SYNC */
+			int				fence_fd;
 			int				plane_alpha;
 			enum decon_blending		blending;
 			enum decon_idma_type		idma_type;
@@ -435,7 +430,7 @@ struct decon_reg_data {
 };
 
 struct decon_win_config_data {
-	int	fence;	/* FixMe: CONFIG_SYNC */
+	int	fence;
 	int	fd_odma;
 	struct decon_win_config config[MAX_DECON_WIN + 1];
 };
@@ -487,12 +482,12 @@ typedef enum disp_ss_event_type {
 	DISP_EVT_DECON_FRAMEDONE,
 	DISP_EVT_DSIM_FRAMEDONE,
 	DISP_EVT_UPDATE_TIMEOUT,
-	DISP_EVT_LINECNT_TIMEOUT,
 
 	/* Related with async event */
 	DISP_EVT_UPDATE_HANDLER = EVT_TYPE_ASYNC_EVT,
 	DISP_EVT_DSIM_COMMAND,
 	DISP_EVT_TRIG_MASK,
+	DISP_EVT_TRIG_UNMASK,
 	DISP_EVT_DECON_FRAMEDONE_WAIT,
 	DISP_EVT_LINECNT_ZERO,
 	DISP_EVT_SIZE_ERR,
@@ -611,16 +606,21 @@ void DISP_SS_EVENT_SIZE_ERR_LOG(struct v4l2_subdev *sd, struct disp_ss_size_info
 * END of CONFIG_DECON_EVENT_LOG
 */
 
-#ifdef CONFIG_DRM_DMA_SYNC
-struct decon_fence_work {
-	struct work_struct work;
-	struct decon_device *decon;
+enum {
+	DISP_DUMP_DECON_UNDERRUN,
+	DISP_DUMP_LINECNT_ZERO,
+	DISP_DUMP_VSYNC_TIMEOUT,
+	DISP_DUMP_VSTATUS_TIMEOUT,
+	DISP_DUMP_COMMAND_WR_TIMEOUT,
+	DISP_DUMP_COMMAND_RD_ERROR,
+	DISP_DUMP_MAX
 };
 
-struct decon_fence_node {
-	struct decon_reg_data *regs;
-	struct list_head	list;
-};
+void decon_dump(struct decon_device *decon);
+#if defined(CONFIG_DECON_EVENT_LOG) && defined(CONFIG_DEBUG_LIST)	/* ENG */
+void DISP_SS_DUMP(u32 type);
+#else
+#define DISP_SS_DUMP(...)
 #endif
 
 struct decon_device {
@@ -647,19 +647,8 @@ struct decon_device {
 	atomic_t			lpd_block_cnt;
 
 	struct ion_client		*ion_client;
-#ifdef CONFIG_SYNC
-	struct sw_sync_timeline		*timeline;
+	struct sw_sync_timeline 	*timeline;
 	int				timeline_max;
-#endif
-#ifdef CONFIG_DRM_DMA_SYNC
-	struct notifier_block		nb_ctrl;
-	void		*fence_dev;
-	struct workqueue_struct	*fence_wq;
-	struct decon_fence_work *fence_work;
-	struct completion	fence_comp;
-	struct list_head	fence_list;
-	struct mutex	fence_lock;
-#endif
 
 	struct mutex			output_lock;
 	struct mutex			mutex;
@@ -711,13 +700,22 @@ struct decon_device {
 	struct pinctrl			*pinctrl;
 	struct pinctrl_state 		*decon_te_on;
 	struct pinctrl_state		*decon_te_off;
-	struct pinctrl_state 		*decon_rst_prev;
-	struct pinctrl_state		*decon_rst_in;
 	struct decon_phys_old_info	old_info;
-	enum aod_state		aod_state;
-	u32 dpms;
-	u32 dbg_cnt;
-	bool rst_gpio_state;
+	struct decon_regs_data win_regs;
+
+	bool				ignore_vsync;
+	struct abd_protect		abd;
+	atomic_t			ffu_flag;	/* first frame update */
+
+	unsigned int			force_fullupdate;
+
+	unsigned int			esd_recovery;
+	unsigned int			disp_dump;
+
+	int systrace_pid;
+	void	(*tracing_mark_write)( int pid, char id, char* str1, int value);
+
+	int 			update_regs_list_cnt;
 };
 
 static inline struct decon_device *get_decon_drvdata(u32 id)
@@ -806,6 +804,9 @@ void decon_set_qos(struct decon_device *decon, struct decon_reg_data *regs,
 /* LPD related */
 static inline void decon_lpd_block(struct decon_device *decon)
 {
+	if (!decon)
+		return;
+
 	atomic_inc(&decon->lpd_block_cnt);
 }
 
@@ -821,6 +822,9 @@ static inline int decon_get_lpd_block_cnt(struct decon_device *decon)
 
 static inline void decon_lpd_unblock(struct decon_device *decon)
 {
+	if (!decon)
+		return;
+
 	if (decon_is_lpd_blocked(decon))
 		atomic_dec(&decon->lpd_block_cnt);
 }
@@ -855,11 +859,7 @@ static inline bool decon_lpd_enter_cond(struct decon_device *decon)
 
 static inline bool is_any_pending_frames(struct decon_device *decon)
 {
-#ifdef CONFIG_SYNC
 	return ((decon->timeline_max - decon->timeline->value) > 1);
-#else
-	return false;
-#endif
 }
 
 /* IOCTL commands */
@@ -881,9 +881,6 @@ static inline bool is_any_pending_frames(struct decon_device *decon)
 						struct exynos_hdmi_data)
 #define EXYNOS_SET_HDMI_CONFIG		_IOW('F', 221, \
 						struct exynos_hdmi_data)
-
-#define S3CFB_METADATA_SET		_IOW('F', 230, \
-						struct decon_metadata)
 
 #define DECON_IOC_LPD_EXIT_LOCK		_IOW('L', 0, u32)
 #define DECON_IOC_LPD_UNLOCK		_IOW('L', 1, u32)

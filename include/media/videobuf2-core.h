@@ -18,9 +18,7 @@
 #include <linux/videodev2.h>
 #include <linux/dma-buf.h>
 
-#ifdef CONFIG_SYNC
 #include "../../drivers/staging/android/sw_sync.h"
-#endif
 
 struct vb2_alloc_ctx;
 struct vb2_fileio_data;
@@ -202,13 +200,8 @@ struct vb2_buffer {
 	struct vb2_queue	*vb2_queue;
 
 	unsigned int		num_planes;
-#ifdef CONFIG_SYNC
+
 	struct sync_fence	*acquire_fence;
-#endif
-#ifdef CONFIG_DRM_DMA_SYNC
-	struct fence		*fence;
-	void			*fence_dev;
-#endif
 
 /* Private: internal use only */
 	enum vb2_buffer_state	state;
@@ -442,9 +435,8 @@ struct vb2_queue {
 
 	struct vb2_fileio_data		*fileio;
 	struct vb2_threadio_data	*threadio;
-#ifdef CONFIG_SYNC
+
 	struct sw_sync_timeline		*timeline;
-#endif
 	u32				timeline_max;
 
 #ifdef CONFIG_VIDEO_ADV_DEBUG

@@ -12,7 +12,8 @@ CHIPSET=exynos7270
 RELEASE="eng"
 MODEL="android_solis"
 
-make clean && rm -rf *.tar
+clear
+#make clean && rm -rf *.tar
 
 echo "base_def : ${MODEL}_defconfig , Release : ${RELEASE}"
 

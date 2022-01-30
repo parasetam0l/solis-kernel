@@ -81,6 +81,8 @@ struct decon_lcd {
 	const char *panel_name;
 	const char *vdd_name;
 	const char *vci_name;
+	unsigned int clklane_onoff;
+    unsigned int rev;
 };
 
 #define SCLK_MAX_BUF 	3

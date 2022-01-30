@@ -802,7 +802,7 @@ static int cyttsp5_setup_input_attention(struct device *dev)
 	return rc;
 }
 
-extern int get_panel_id(void);
+//extern int get_panel_id(void);
 #define S6E36W2X01_ID3		0x11
 #define PANEL_ID3_MASK		0xff
 int cyttsp5_mt_probe(struct device *dev)
@@ -835,10 +835,10 @@ int cyttsp5_mt_probe(struct device *dev)
 		goto error_alloc_failed;
 	}
 
-	if ((get_panel_id() & PANEL_ID3_MASK) == S6E36W2X01_ID3) {
+	/*if ((get_panel_id() & PANEL_ID3_MASK) == S6E36W2X01_ID3) {
 		dev_info(dev, "%s: detected 8x8 panel.\n", __func__);
 		md->pdata->flags = 0x00;
-	}
+	}*/
 
 	md->input->name = SEC_TSP_NAME;
 	scnprintf(md->phys, sizeof(md->phys)-1, "%s/input0", CYTTSP5_MT_NAME);
