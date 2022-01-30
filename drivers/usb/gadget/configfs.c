@@ -9,6 +9,8 @@
 #include "u_f.h"
 #include "u_os_desc.h"
 #include <linux/soc/samsung/exynos-soc.h>
+#include "../dwc3/core.h"
+#include "../dwc3/otg.h"
 
 #ifdef CONFIG_USB_CONFIGFS_UEVENT
 #include <linux/platform_device.h>
@@ -317,6 +319,8 @@ static ssize_t gadget_dev_desc_UDC_store(struct gadget_info *gi,
 {
 	char *name;
 	int ret;
+
+	pr_info("%s: +++\n", __func__);
 
 	name = kstrdup(page, GFP_KERNEL);
 	if (!name)
@@ -1360,7 +1364,7 @@ static void purge_configs_funcs(struct gadget_info *gi)
 			list_move_tail(&f->list, &cfg->func_list);
 			if (f->unbind) {
 				dev_err(&gi->cdev.gadget->dev, "unbind function"
-						" '%s'/%p\n", f->name, f);
+						" '%s'/%pK\n", f->name, f);
 				f->unbind(c, f);
 			}
 		}
@@ -1548,7 +1552,7 @@ static void android_work(struct work_struct *data)
 	}
 
 	if (!uevent_sent) {
-		pr_info("%s: did not send uevent (%d %d %p)\n", __func__,
+		pr_info("%s: did not send uevent (%d %d %pK)\n", __func__,
 			gi->connected, gi->sw_connected, cdev->config);
 	}
 }
@@ -1637,6 +1641,7 @@ static const struct usb_gadget_driver configfs_driver_template = {
 	.unbind         = configfs_composite_unbind,
 #ifdef CONFIG_USB_CONFIGFS_UEVENT
 	.setup          = android_setup,
+	.reset          = android_disconnect,
 	.disconnect     = android_disconnect,
 #else
 	.setup          = composite_setup,
@@ -1807,6 +1812,7 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 	struct usb_configuration *c;
 	struct config_usb_cfg *cfg;
 	struct usb_function *f, *tmp;
+	struct dwc3 *dwc;
 	int enabled = 0;
 
 	if (!dev)
@@ -1817,6 +1823,10 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		return -ENODEV;
 
 	gadget = cdev->gadget;
+	if (gadget) {
+		dwc = container_of(gadget, struct dwc3, gadget);
+		mutex_lock(&dwc->dotg->fsm.lock);
+	}
 	mutex_lock(&dev->lock);
 
 	sscanf(buff, "%d", &enabled);
@@ -1824,6 +1834,11 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		pr_info("%s: Connect gadget: enabled=%d, dev->enabled=%d\n",
 				__func__, enabled, dev->enabled);
 		cdev->next_string_id = 0;
+		if(!gadget) {
+			pr_info("%s: Gadget is NULL\n", __func__);
+			mutex_unlock(&dev->lock);
+			return -ENODEV;
+		}
 		usb_gadget_connect(gadget);
 		dev->enabled = true;
 	} else if (!enabled && dev->enabled) {
@@ -1845,6 +1860,9 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 	}
 
 	mutex_unlock(&dev->lock);
+	if (gadget) {
+		mutex_unlock(&dwc->dotg->fsm.lock);
+	}
 	return size;
 }
 
@@ -1940,10 +1958,10 @@ static struct config_group *gadgets_make(
 	gi->composite.name = gi->composite.gadget_driver.function;
 
 #ifdef CONFIG_USB_CONFIGFS_UEVENT
-	INIT_WORK(&gi->work, android_work);
-	android_device = device_create(android_class, NULL,
-				MKDEV(0, 0), NULL, "android0");
-	if (IS_ERR(android_device))
+        INIT_WORK(&gi->work, android_work);
+        android_device = device_create(android_class, NULL,
+                                MKDEV(0, 0), NULL, "android0");
+        if (IS_ERR(android_device))
 		goto err;
 
 	dev_set_drvdata(android_device, gi);

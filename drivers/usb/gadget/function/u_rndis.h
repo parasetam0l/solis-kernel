@@ -29,16 +29,6 @@ struct f_rndis_opts {
 	struct usb_os_desc		rndis_os_desc;
 	char				rndis_ext_compat_id[16];
 
-	/* Tizne HACK:
-	 * us : To check usb_string descriptor attached or not
-	 * iad : To override rndis_iad_descritor by user space
-	 * ctl_intf : To override rndis_control_intf by user space
-	 */
-	struct usb_string	*us;
-	struct usb_interface_assoc_descriptor *iad;
-	struct usb_interface_descriptor *ctl_intf;
-
-
 	/*
 	 * Read/write access to configfs attributes is handled by configfs.
 	 *

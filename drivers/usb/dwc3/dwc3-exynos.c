@@ -672,7 +672,6 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 	struct dwc3_exynos	*exynos;
 	struct device		*dev = &pdev->dev;
 	struct device_node	*node = dev->of_node;
-
 	int			ret;
 
 	exynos = devm_kzalloc(dev, sizeof(*exynos), GFP_KERNEL);
@@ -689,12 +688,6 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 		return ret;
 
 	platform_set_drvdata(pdev, exynos);
-
-	ret = dwc3_exynos_register_phys(exynos);
-	if (ret) {
-		dev_err(dev, "couldn't register PHYs\n");
-		return ret;
-	}
 
 	exynos->dev	= dev;
 #if IS_ENABLED(CONFIG_OF)
@@ -754,20 +747,35 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 		}
 	}
 
+	ret = dwc3_exynos_register_phys(exynos);
+	if (ret) {
+		dev_err(dev, "couldn't register PHYs\n");
+		goto err4;
+	}
+
+	ret = dwc3_exynos_register_phys(exynos);
+	if (ret) {
+		dev_err(dev, "couldn't register PHYs\n");
+		goto err4;
+	}
+
 	if (node) {
 		ret = of_platform_populate(node, NULL, NULL, dev);
 		if (ret) {
 			dev_err(dev, "failed to add dwc3 core\n");
-			goto err4;
+			goto err5;
 		}
 	} else {
 		dev_err(dev, "no device node, failed to add dwc3 core\n");
 		ret = -ENODEV;
-		goto err4;
+		goto err5;
 	}
 
 	return 0;
 
+err5:
+	platform_device_unregister(exynos->usb2_phy);
+	platform_device_unregister(exynos->usb3_phy);
 err4:
 	if (exynos->vdd10)
 		regulator_disable(exynos->vdd10);
@@ -779,6 +787,7 @@ err2:
 	dwc3_exynos_clk_disable(exynos);
 	dwc3_exynos_clk_unprepare(exynos);
 	pm_runtime_set_suspended(&pdev->dev);
+
 	return ret;
 }
 
@@ -809,9 +818,11 @@ static int dwc3_exynos_remove(struct platform_device *pdev)
 static int dwc3_exynos_runtime_suspend(struct device *dev)
 {
 	struct dwc3_exynos *exynos = dev_get_drvdata(dev);
-
+#ifdef CONFIG_USB_DEBUG_DETAILED_LOG
+	dev_info(dev, "%s\n", __func__);
+#else
 	dev_dbg(dev, "%s\n", __func__);
-
+#endif
 	dwc3_exynos_clk_disable(exynos);
 
 	/* inform what USB state is idle to IDLE_IP */
@@ -828,8 +839,11 @@ static int dwc3_exynos_runtime_resume(struct device *dev)
 {
 	struct dwc3_exynos *exynos = dev_get_drvdata(dev);
 	int ret = 0;
-
+#ifdef CONFIG_USB_DEBUG_DETAILED_LOG
+	dev_info(dev, "%s\n", __func__);
+#else
 	dev_dbg(dev, "%s\n", __func__);
+#endif
 
 #ifdef CONFIG_PM_DEVFREQ
 	if (exynos->int_min_lock)

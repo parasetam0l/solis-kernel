@@ -757,7 +757,7 @@ struct dwc3 {
 	struct dwc3_trb		*ep0_trb;
 	void			*ep0_bounce;
 	void			*scratchbuf;
-	void			*zlp_buf;
+	void			*zlp_buf;	
 	u8			*setup_buf;
 	dma_addr_t		ctrl_req_addr;
 	dma_addr_t		ep0_trb_addr;
@@ -875,7 +875,7 @@ struct dwc3 {
 #ifdef CONFIG_BATTERY_SAMSUNG_V2
 	struct			work_struct      set_vbus_current_work;
 	int				vbus_current; /* 100mA,  500mA,  900mA */
-#endif
+#endif	
 };
 
 /* -------------------------------------------------------------------------- */

@@ -28,14 +28,11 @@
  * do that for you.
  */
 #define gadget_is_at91(g)		(!strcmp("at91_udc", (g)->name))
-#define gadget_is_ci13xxx_msm(g)	(!strcmp("ci13xxx_msm", (g)->name))
-#define gadget_is_dwc3(g)		(!strcmp("dwc3-gadget", (g)->name))
 #define gadget_is_goku(g)		(!strcmp("goku_udc", (g)->name))
 #define gadget_is_musbhdrc(g)		(!strcmp("musb-hdrc", (g)->name))
 #define gadget_is_net2280(g)		(!strcmp("net2280", (g)->name))
 #define gadget_is_pxa(g)		(!strcmp("pxa25x_udc", (g)->name))
 #define gadget_is_pxa27x(g)		(!strcmp("pxa27x_udc", (g)->name))
-#define gadget_is_s3c_hsotg(g)		(!strcmp("s3c-hsotg", (g)->name))
 
 /**
  * gadget_supports_altsettings - return true if altsettings work

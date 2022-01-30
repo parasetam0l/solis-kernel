@@ -265,7 +265,7 @@ static void dwc3_ep0_stall_and_restart(struct dwc3 *dwc)
 
 	/* stall is always issued on EP0 */
 	dep = dwc->eps[0];
-	__dwc3_gadget_ep_set_halt(dep, 1, false);
+	__dwc3_gadget_ep_set_halt(dep, 1, true);
 	dep->flags = DWC3_EP_ENABLED;
 	dwc->delayed_status = false;
 
@@ -747,6 +747,13 @@ static int dwc3_ep0_std_request(struct dwc3 *dwc, struct usb_ctrlrequest *ctrl)
 		break;
 	case USB_REQ_SET_CONFIGURATION:
 		dwc3_trace(trace_dwc3_ep0, "USB_REQ_SET_CONFIGURATION\n");
+#ifdef CONFIG_BATTERY_SAMSUNG_V2		
+		if (dwc->gadget.speed == USB_SPEED_SUPER)
+			dwc->vbus_current = USB_CURRENT_SUPER_SPEED;
+		else
+			dwc->vbus_current = USB_CURRENT_HIGH_SPEED;
+		schedule_work(&dwc->set_vbus_current_work);
+#endif		
 		ret = dwc3_ep0_set_config(dwc, ctrl);
 		break;
 	case USB_REQ_SET_SEL:

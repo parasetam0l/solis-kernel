@@ -448,4 +448,14 @@ static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
 		       groupsize, buf, len, ascii)
 #endif /* defined(CONFIG_DYNAMIC_DEBUG) */
 
+extern bool		log_usb;
+#define pr_usb(fmt, ...)					\
+({								\
+								\
+	if (log_usb)			\
+		printk(fmt, ##__VA_ARGS__);	\
+	else						\
+		no_printk(fmt, ##__VA_ARGS__);			\
+})
+
 #endif

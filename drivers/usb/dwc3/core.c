@@ -46,7 +46,27 @@
 #include "io.h"
 
 #include "debug.h"
+#ifdef CONFIG_BATTERY_SAMSUNG_V2
+/* for BC1.2 spec */
+int dwc3_set_vbus_current(int state)
+{
 
+	
+    union power_supply_propval pval = {0};
+
+    pval.intval = state;
+    psy_do_property("battery", set, POWER_SUPPLY_EXT_PROP_USB_CONFIGURE, pval);
+	
+    return 0;
+}
+
+static void dwc3_exynos_set_vbus_current_work(struct work_struct *w)
+{
+	struct dwc3 *dwc = container_of(w, struct dwc3, set_vbus_current_work);
+
+	dwc3_set_vbus_current(dwc->vbus_current);
+}
+#endif
 /* -------------------------------------------------------------------------- */
 
 void dwc3_set_mode(struct dwc3 *dwc, u32 mode)
@@ -251,7 +271,7 @@ int dwc3_udc_reset(struct dwc3 *dwc)
 			break;
 		}
 
-		cpu_relax();
+		udelay(1);
 	} while (true);
 
 	return ret;
@@ -359,7 +379,10 @@ int dwc3_event_buffers_setup(struct dwc3 *dwc)
 
 	for (n = 0; n < dwc->num_event_buffers; n++) {
 		evt = dwc->ev_buffs[n];
-		dev_dbg(dwc->dev, "Event buf %p dma %08llx length %d\n",
+		if (evt == NULL)
+			dev_err(dwc->dev, "Event buffer is NULL!!!\n");
+
+		dev_info(dwc->dev, "Event buf %p dma %08llx length %d\n",
 				evt->buf, (unsigned long long) evt->dma,
 				evt->length);
 
@@ -372,6 +395,10 @@ int dwc3_event_buffers_setup(struct dwc3 *dwc)
 		dwc3_writel(dwc->regs, DWC3_GEVNTSIZ(n),
 				DWC3_GEVNTSIZ_SIZE(evt->length));
 		dwc3_writel(dwc->regs, DWC3_GEVNTCOUNT(n), 0);
+
+		pr_info("Event buf dma 0x%x 0x%x\n",
+				dwc3_readl(dwc->regs, DWC3_GEVNTADRLO(n)),
+				dwc3_readl(dwc->regs, DWC3_GEVNTSIZ(n)));
 	}
 
 	return 0;
@@ -535,13 +562,13 @@ int dwc3_core_init(struct dwc3 *dwc)
 	if (dwc->revision < DWC3_REVISION_250A)
 		dwc->adj_sof_accuracy = 0;
 
+	ret = dwc3_core_soft_reset(dwc);
+	if (ret)
+		goto err0;
+
 	/* issue device SoftReset too */
 	ret = dwc3_udc_reset(dwc);
 	if (ret < 0)
-		goto err0;
-
-	ret = dwc3_core_soft_reset(dwc);
-	if (ret)
 		goto err0;
 
 	if (dwc->usb3_phy) {
@@ -1009,6 +1036,9 @@ static int dwc3_probe(struct platform_device *pdev)
 	}
 
 	pm_runtime_allow(dev);
+#ifdef CONFIG_BATTERY_SAMSUNG_V2	
+	INIT_WORK(&dwc->set_vbus_current_work, dwc3_exynos_set_vbus_current_work);	
+#endif	
 
 	return 0;
 

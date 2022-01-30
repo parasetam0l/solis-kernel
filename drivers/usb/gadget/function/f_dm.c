@@ -12,21 +12,12 @@
  * either version 2 of that License or (at your option) any later version.
  */
 
-#include <linux/module.h>
-#include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/device.h>
 
-#include <linux/configfs.h>
-#include <linux/usb/composite.h>
-
-#include "../configfs.h"
 #include "u_serial.h"
 #include "gadget_chips.h"
 
-#define MAX_INST_NAME_LEN		40
-/*  DM_PORT NUM : /dev/ttyGS* port number */
-#define DM_PORT_NUM			1
 /*
  * This function packages a simple "generic serial" port with no real
  * control mechanisms, just raw data transfer over two bulk endpoints.
@@ -161,11 +152,6 @@ static struct usb_gadget_strings *dm_strings[] = {
 	NULL,
 };
 
-struct dm_instance {
-	struct usb_function_instance func_inst;
-	const char *name;
-	struct f_dm *dm;
-};
 /*-------------------------------------------------------------------------*/
 
 static int dm_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
@@ -200,7 +186,7 @@ static int dm_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 			dm->port_num);
 
 	if (status < 0) {
-		printk(KERN_DEBUG "fail to activate generic ttyGS%d\n",
+		printk(KERN_ERR "fail to activate generic ttyGS%d\n",
 				dm->port_num);
 
 		return status;
@@ -230,13 +216,6 @@ dm_bind(struct usb_configuration *c, struct usb_function *f)
 	int			status;
 	struct usb_ep		*ep;
 
-	/* maybe allocate device-global string ID */
-	if (dm_string_defs[F_DM_IDX].id == 0) {
-		status = usb_string_id(c->cdev);
-		if (status < 0)
-			return status;
-		dm_string_defs[F_DM_IDX].id = status;
-	}
 	/* allocate instance-specific interface IDs */
 	status = usb_interface_id(c, f);
 	if (status < 0)
@@ -258,7 +237,7 @@ dm_bind(struct usb_configuration *c, struct usb_function *f)
 		goto fail;
 	dm->port.out = ep;
 	ep->driver_data = cdev;	/* claim */
-	printk(KERN_INFO "[%s]   in =0x%p , out =0x%p\n", __func__,
+	printk(KERN_INFO "[%s]   in =0x%pK , out =0x%pK\n", __func__,
 				dm->port.in, dm->port.out);
 
 	/* copy descriptors, and track endpoint copies */
@@ -292,7 +271,7 @@ dm_bind(struct usb_configuration *c, struct usb_function *f)
 			goto fail;
 	}
 
-	printk("usb: [%s] generic ttyGS%d: %s speed IN/%s OUT/%s\n",
+	printk(KERN_DEBUG "usb: %s generic ttyGS%d: %s speed IN/%s OUT/%s\n",
 			__func__,
 			dm->port_num,
 			gadget_is_superspeed(c->cdev->gadget) ? "super" :
@@ -315,18 +294,11 @@ fail:
 static void
 dm_unbind(struct usb_configuration *c, struct usb_function *f)
 {
-#ifdef CONFIG_USB_G_SLP
-	struct f_dm	*dm = func_to_dm(f);
-#endif
-
 	if (gadget_is_dualspeed(c->cdev->gadget))
 		usb_free_descriptors(f->hs_descriptors);
 	usb_free_descriptors(f->fs_descriptors);
+	kfree(func_to_dm(f));
 	printk(KERN_DEBUG "usb: %s\n", __func__);
-
-#ifdef CONFIG_USB_G_SLP
-	kfree(dm);
-#endif
 }
 
 /*
@@ -363,7 +335,7 @@ int dm_bind_config(struct usb_configuration *c, u8 port_num)
 	if (!dm)
 		return -ENOMEM;
 
-	dm->port_num = DM_PORT_NUM;
+	dm->port_num = port_num;
 
 	dm->port.func.name = "dm";
 	dm->port.func.strings = dm_strings;
@@ -377,138 +349,3 @@ int dm_bind_config(struct usb_configuration *c, u8 port_num)
 		kfree(dm);
 	return status;
 }
-static struct dm_instance *to_dm_instance(struct config_item *item)
-{
-	return container_of(to_config_group(item), struct dm_instance,
-		func_inst.group);
-}
-static void dm_attr_release(struct config_item *item)
-{
-	struct dm_instance *fi_dm = to_dm_instance(item);
-	usb_put_function_instance(&fi_dm->func_inst);
-}
-
-static struct configfs_item_operations dm_item_ops = {
-	.release        = dm_attr_release,
-};
-
-static struct config_item_type dm_func_type = {
-	.ct_item_ops    = &dm_item_ops,
-	.ct_owner       = THIS_MODULE,
-};
-
-
-static struct dm_instance *to_fi_dm(struct usb_function_instance *fi)
-{
-	return container_of(fi, struct dm_instance, func_inst);
-}
-
-static int dm_set_inst_name(struct usb_function_instance *fi, const char *name)
-{
-	struct dm_instance *fi_dm;
-	char *ptr;
-	int name_len;
-
-	name_len = strlen(name) + 1;
-	if (name_len > MAX_INST_NAME_LEN)
-		return -ENAMETOOLONG;
-
-	ptr = kstrndup(name, name_len, GFP_KERNEL);
-	if (!ptr)
-		return -ENOMEM;
-
-	fi_dm = to_fi_dm(fi);
-	fi_dm->name = ptr;
-
-	return 0;
-}
-
-static void dm_free_inst(struct usb_function_instance *fi)
-{
-	struct dm_instance *fi_dm;
-
-	fi_dm = to_fi_dm(fi);
-	kfree(fi_dm->name);
-	kfree(fi_dm);
-}
-
-struct usb_function_instance *alloc_inst_dm(bool dm_config)
-{
-	struct dm_instance *fi_dm;
-
-	fi_dm = kzalloc(sizeof(*fi_dm), GFP_KERNEL);
-	if (!fi_dm)
-		return ERR_PTR(-ENOMEM);
-	fi_dm->func_inst.set_inst_name = dm_set_inst_name;
-	fi_dm->func_inst.free_func_inst = dm_free_inst;
-
-
-	config_group_init_type_name(&fi_dm->func_inst.group,
-					"", &dm_func_type);
-
-	return  &fi_dm->func_inst;
-}
-EXPORT_SYMBOL_GPL(alloc_inst_dm);
-
-static struct usb_function_instance *dm_alloc_inst(void)
-{
-		return alloc_inst_dm(true);
-}
-
-static void dm_free(struct usb_function *f)
-{
-	struct f_dm	*dm = func_to_dm(f);
-
-	kfree(dm);
-}
-
-struct usb_function *function_alloc_dm(struct usb_function_instance *fi, bool dm_config)
-{
-
-	struct dm_instance *fi_dm = to_fi_dm(fi);
-	struct f_dm	*dm;
-	int		ret;
-
-	/* REVISIT might want instance-specific strings to help
-	 * distinguish instances ...
-	 */
-
-	/* allocate and initialize one new instance */
-	dm = kzalloc(sizeof *dm, GFP_KERNEL);
-	if (!dm)
-		return ERR_PTR(-ENOMEM);
-
-
-	dm->port_num = DM_PORT_NUM;
-
-	dm->port.func.name = "dm";
-	dm->port.func.strings = dm_strings;
-	dm->port.func.bind = dm_bind;
-	dm->port.func.unbind = dm_unbind;
-	dm->port.func.set_alt = dm_set_alt;
-	dm->port.func.disable = dm_disable;
-	dm->port.func.free_func = dm_free;
-
-	fi_dm->dm = dm;
-
-	ret = gserial_alloc_line(&dm->port_num);
-	if (ret) {
-		kfree(dm);
-		return ERR_PTR(ret);
-	}
-
-	return &dm->port.func;
-}
-EXPORT_SYMBOL_GPL(function_alloc_dm);
-
-static struct usb_function *dm_alloc(struct usb_function_instance *fi)
-{
-	return function_alloc_dm(fi, true);
-}
-
-#ifdef CONFIG_USB_G_SLP
-DECLARE_USB_FUNCTION(dm, dm_alloc_inst, dm_alloc);
-#else
-DECLARE_USB_FUNCTION_INIT(dm, dm_alloc_inst, dm_alloc);
-#endif
-MODULE_LICENSE("GPL");

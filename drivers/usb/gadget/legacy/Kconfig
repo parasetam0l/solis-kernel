@@ -287,6 +287,7 @@ config USB_MIDI_GADGET
 	depends on SND
 	select USB_LIBCOMPOSITE
 	select SND_RAWMIDI
+	select USB_F_MIDI
 	help
 	  The MIDI Gadget acts as a USB Audio device, with one MIDI
 	  input and one MIDI output. These MIDI jacks appear as
@@ -476,32 +477,3 @@ config USB_G_WEBCAM
 
 	  Say "y" to link the driver statically, or "m" to build a
 	  dynamically linked module called "g_webcam".
-
-config USB_G_SLP
-	boolean "SLP Gadget based on Android"
-	select USB_F_ACM
-	select USB_LIBCOMPOSITE
-	select USB_U_SERIAL
-	help
-	  The SLP gadget driver supports multiple USB functions.
-	  The functions can be configured via a board file and may be
-	  enabled and disabled dynamically.
-	  Support functions: sdb, acm, mtp, rndis(optional).
-
-config USB_DUN_SUPPORT
-	boolean "DUN support function"
-	depends on (USB_F_ACM=y) && (USB_G_SLP=y)
-	help
-	  Provides USB modem serial driver.
-	  This function makes connection to acm from data router.
-	  It uses misc register.
-	  Support fops : open, close, release, read, poll, llseek, ioctl
-
-config USB_SLP_RNDIS_SUPPORT
-	boolean "RNDIS support in SLP"
-	depends on (NET=y) && (USB_G_SLP=y)
-	select USB_U_ETHER
-	select USB_F_RNDIS
-	help
-	  Select USB RNDIS functionality supporting in SLP gadget driver.
-	  This feature makes sure that f_rndis enabled in SLP.

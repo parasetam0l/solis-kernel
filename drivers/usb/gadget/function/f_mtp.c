@@ -315,15 +315,17 @@ struct mtp_ext_config_desc_function {
 };
 
 /* MTP Extended Configuration Descriptor */
-struct {
+struct mtp_ext_config_desc {
 	struct mtp_ext_config_desc_header	header;
 	struct mtp_ext_config_desc_function    function;
-} mtp_ext_config_desc = {
+};
+
+static struct mtp_ext_config_desc mtp_ext_config_desc = {
 	.header = {
 		.dwLength = __constant_cpu_to_le32(sizeof(mtp_ext_config_desc)),
 		.bcdVersion = __constant_cpu_to_le16(0x0100),
 		.wIndex = __constant_cpu_to_le16(4),
-		.bCount = __constant_cpu_to_le16(1),
+		.bCount = 1,
 	},
 	.function = {
 		.bFirstInterfaceNumber = 0,
@@ -352,6 +354,8 @@ struct mtp_instance {
 	struct usb_function_instance func_inst;
 	const char *name;
 	struct mtp_dev *dev;
+	char mtp_ext_compat_id[16];
+	struct usb_os_desc mtp_os_desc;
 };
 
 /* temporary variable used between mtp_open() and mtp_gadget_bind() */
@@ -741,6 +745,11 @@ static void send_file_work(struct work_struct *data)
 	offset = dev->xfer_file_offset;
 	count = dev->xfer_file_length;
 
+	if (count < 0) {
+		dev->xfer_result = -EINVAL;
+		return;
+	}
+
 	DBG(cdev, "send_file_work(%lld %lld)\n", offset, count);
 
 	if (dev->xfer_send_header) {
@@ -841,6 +850,11 @@ static void receive_file_work(struct work_struct *data)
 	filp = dev->xfer_file;
 	offset = dev->xfer_file_offset;
 	count = dev->xfer_file_length;
+
+	if (count < 0) {
+		dev->xfer_result = -EINVAL;
+		return;
+	}
 
 	DBG(cdev, "receive_file_work(%lld)\n", count);
 
@@ -1067,9 +1081,59 @@ static int mtp_release(struct inode *ip, struct file *fp)
 	return 0;
 }
 #ifdef CONFIG_COMPAT
-static long mtp_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+static long mtp_compat_ioctl(struct file *fp, unsigned code, unsigned long value)
 {
-	return mtp_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
+	code = (code == MTP_SEND_FILE_32) ? MTP_SEND_FILE :
+		(code == MTP_RECEIVE_FILE_32) ? MTP_RECEIVE_FILE :
+		(code == MTP_SEND_EVENT_32) ? MTP_SEND_EVENT : MTP_SEND_FILE_WITH_HEADER;
+	
+	switch (code) {
+	case MTP_SEND_FILE:
+	case MTP_RECEIVE_FILE:
+	case MTP_SEND_FILE_WITH_HEADER:
+	{
+		struct mtp_file_range __user *mfr64;
+		struct mtp_file_range_32 __user *mfr32;
+		compat_int_t fd;
+		compat_s64 temp;
+		u16	command;
+		u32	id;
+		mfr32 = (struct mtp_file_range_32 __user *)value;
+		mfr64 = compat_alloc_user_space(sizeof(*mfr64));
+		if (get_user(fd, &mfr32->fd) || put_user(fd, &mfr64->fd) ||
+				get_user(temp, &mfr32->offset) || put_user(temp, &mfr64->offset) ||
+				get_user(temp, &mfr32->length) || put_user(temp, &mfr64->length) ||
+				get_user(command, &mfr32->command) || put_user(command, &mfr64->command) ||
+				get_user(id, &mfr32->transaction_id) || put_user(id, &mfr64->transaction_id))
+			return -EFAULT;
+		/* copy mfr64 to value */
+		value = (uintptr_t) mfr64;
+
+		break;
+	}
+	case MTP_SEND_EVENT:
+	{
+		struct mtp_event __user	*event64;
+		struct mtp_event_32 __user	*event32;
+		__u32 udata;
+		u32 length;
+
+		event32 = (struct mtp_event_32 __user *)value;
+		event64 = compat_alloc_user_space(sizeof(*event64));
+
+		if (get_user(length, &event32->length) ||
+				put_user(length, &event64->length) ||
+				get_user(udata, &event32->compat_data) ||
+				put_user(compat_ptr(udata), &event64->data))
+			return -EFAULT;
+		/* copy event pointer to value */
+		value = (uintptr_t) event64;
+
+		break;
+	}
+	}
+
+	return mtp_ioctl(fp, code, (unsigned long)compat_ptr(value));
 }
 #endif
 /* file operations for /dev/mtp_usb */
@@ -1126,6 +1190,13 @@ static int mtp_ctrlrequest(struct usb_composite_dev *cdev,
 			value = (w_length < sizeof(mtp_ext_config_desc) ?
 					w_length : sizeof(mtp_ext_config_desc));
 			memcpy(cdev->req->buf, &mtp_ext_config_desc, value);
+
+			/* update compatibleID if PTP */
+			if (dev->function.fs_descriptors == fs_ptp_descs) {
+				struct mtp_ext_config_desc *d = cdev->req->buf;
+
+				d->function.compatibleID[0] = 'P';
+			}
 		}
 	} else if ((ctrl->bRequestType & USB_TYPE_MASK) == USB_TYPE_CLASS) {
 		DBG(cdev, "class request: %d index: %d value: %d length: %d\n",
@@ -1189,6 +1260,7 @@ mtp_function_bind(struct usb_configuration *c, struct usb_function *f)
 	struct mtp_dev	*dev = func_to_mtp(f);
 	int			id;
 	int			ret;
+	struct mtp_instance *fi_mtp;
 
 	dev->cdev = cdev;
 	DBG(cdev, "mtp_function_bind dev: %p\n", dev);
@@ -1206,6 +1278,18 @@ mtp_function_bind(struct usb_configuration *c, struct usb_function *f)
 		mtp_string_defs[INTERFACE_STRING_INDEX].id = ret;
 		mtp_interface_desc.iInterface = ret;
 	}
+
+	fi_mtp = container_of(f->fi, struct mtp_instance, func_inst);
+
+	if (cdev->use_os_string) {
+		f->os_desc_table = kzalloc(sizeof(*f->os_desc_table),
+					GFP_KERNEL);
+		if (!f->os_desc_table)
+			return -ENOMEM;
+		f->os_desc_n = 1;
+		f->os_desc_table[0].os_desc = &fi_mtp->mtp_os_desc;
+	}
+
 	/* allocate endpoints */
 	ret = mtp_create_bulk_endpoints(dev, &mtp_fullspeed_in_desc,
 			&mtp_fullspeed_out_desc, &mtp_intr_desc);
@@ -1250,6 +1334,8 @@ mtp_function_unbind(struct usb_configuration *c, struct usb_function *f)
 	while ((req = mtp_req_get(dev, &dev->intr_idle)))
 		mtp_request_free(req, dev->ep_intr);
 	dev->state = STATE_OFFLINE;
+	kfree(f->os_desc_table);
+	f->os_desc_n = 0;
 }
 
 static int mtp_function_set_alt(struct usb_function *f,
@@ -1478,6 +1564,7 @@ static void mtp_free_inst(struct usb_function_instance *fi)
 	fi_mtp = to_fi_mtp(fi);
 	kfree(fi_mtp->name);
 	mtp_cleanup();
+	kfree(fi_mtp->mtp_os_desc.group.default_groups);
 	kfree(fi_mtp);
 }
 
@@ -1485,12 +1572,21 @@ struct usb_function_instance *alloc_inst_mtp_ptp(bool mtp_config)
 {
 	struct mtp_instance *fi_mtp;
 	int ret = 0;
+	struct usb_os_desc *descs[1];
+	char *names[1];
 
 	fi_mtp = kzalloc(sizeof(*fi_mtp), GFP_KERNEL);
 	if (!fi_mtp)
 		return ERR_PTR(-ENOMEM);
 	fi_mtp->func_inst.set_inst_name = mtp_set_inst_name;
 	fi_mtp->func_inst.free_func_inst = mtp_free_inst;
+
+	fi_mtp->mtp_os_desc.ext_compat_id = fi_mtp->mtp_ext_compat_id;
+	INIT_LIST_HEAD(&fi_mtp->mtp_os_desc.ext_prop);
+	descs[0] = &fi_mtp->mtp_os_desc;
+	names[0] = "MTP";
+	usb_os_desc_prepare_interf_dir(&fi_mtp->func_inst.group, 1,
+					descs, names, THIS_MODULE);
 
 	if (mtp_config) {
 		ret = mtp_setup_configfs(fi_mtp);
@@ -1530,6 +1626,7 @@ struct usb_function *function_alloc_mtp_ptp(struct usb_function_instance *fi,
 {
 	struct mtp_instance *fi_mtp = to_fi_mtp(fi);
 	struct mtp_dev *dev = fi_mtp->dev;
+#ifdef CONFIG_USB_CONFIGFS_UEVENT
 	struct usb_function *function;
 
 	if (mtp_config) {
@@ -1555,6 +1652,25 @@ struct usb_function *function_alloc_mtp_ptp(struct usb_function_instance *fi,
 	function->free_func = mtp_free;
 
 	return function;
+#else
+	dev->function.name = DRIVER_NAME;
+	dev->function.strings = mtp_strings;
+	if (mtp_config) {
+		dev->function.fs_descriptors = fs_mtp_descs;
+		dev->function.hs_descriptors = hs_mtp_descs;
+	} else {
+		dev->function.fs_descriptors = fs_ptp_descs;
+		dev->function.hs_descriptors = hs_ptp_descs;
+	}
+	dev->function.bind = mtp_function_bind;
+	dev->function.unbind = mtp_function_unbind;
+	dev->function.set_alt = mtp_function_set_alt;
+	dev->function.disable = mtp_function_disable;
+	dev->function.setup = mtp_ctrlreq_configfs;
+	dev->function.free_func = mtp_free;
+
+	return &dev->function;
+#endif
 }
 EXPORT_SYMBOL_GPL(function_alloc_mtp_ptp);
 
