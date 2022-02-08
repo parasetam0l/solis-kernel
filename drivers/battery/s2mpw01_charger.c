@@ -825,7 +825,7 @@ static int s2mpw01_chg_set_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_ONLINE:
 		charger->cable_type = val->intval;
 		if (charger->cable_type == POWER_SUPPLY_TYPE_BATTERY ||
-				charger->cable_type == POWER_SUPPLY_TYPE_UNKNOWN) {
+				charger->cable_type == POWER_SUPPLY_TYPE_UNKNOWN || charger->cable_type == POWER_SUPPLY_TYPE_USB) {
 			pr_info("%s() [BATT] Type Battery\n", __func__);
 			if (!charger->pdata->charging_current_table)
 				return -EINVAL;
@@ -1041,7 +1041,7 @@ static void s2mpw01_muic_init_detect(struct work_struct *work)
 #if defined(CONFIG_MUIC_NOTIFIER)
 				if (chg_sts2 & CHGIN_INPUT_STATUS_MASK) {
 					pr_info("%s: Wired TA connected\n", __func__);
-					charger->muic_dev = ATTACHED_DEV_TA_MUIC;
+					charger->muic_dev = ATTACHED_DEV_USB_MUIC;
 				} else {
 					pr_info("%s: Wireless TA connected\n", __func__);
 					charger->muic_dev = ATTACHED_DEV_WIRELESS_TA_MUIC;
@@ -1213,7 +1213,7 @@ static void s2mpw01_muic_detect_handler(struct s2mpw01_charger_data *charger, bo
 #if defined(CONFIG_MUIC_NOTIFIER)
 				if (chg_sts2 & CHGIN_INPUT_STATUS_MASK) {
 					pr_info("%s: Wired TA connected\n", __func__);
-					charger->muic_dev = ATTACHED_DEV_TA_MUIC;
+					charger->muic_dev = ATTACHED_DEV_USB_MUIC;
 				} else {
 					pr_info("%s: Wireless TA connected\n", __func__);
 					charger->muic_dev = ATTACHED_DEV_WIRELESS_TA_MUIC;
@@ -1608,7 +1608,7 @@ static int s2mpw01_charger_probe(struct platform_device *pdev)
 		charger->pdata->charger_name = "sec-charger";
 
 	charger->psy_chg.name           = charger->pdata->charger_name;
-	charger->psy_chg.type           = POWER_SUPPLY_TYPE_UNKNOWN;
+	charger->psy_chg.type           = POWER_SUPPLY_TYPE_USB;
 	charger->psy_chg.get_property   = s2mpw01_chg_get_property;
 	charger->psy_chg.set_property   = s2mpw01_chg_set_property;
 	charger->psy_chg.properties     = s2mpw01_charger_props;
