@@ -208,7 +208,6 @@ static inline void sync_fence_waiter_init(struct sync_fence_waiter *waiter,
 struct sync_timeline *sync_timeline_create(const struct sync_timeline_ops *ops,
 					   int size, const char *name);
 
-#ifdef CONFIG_SYNC
 /**
  * sync_timeline_destroy() - destroys a sync object
  * @obj:	sync_timeline to destroy
@@ -338,46 +337,6 @@ int sync_fence_cancel_async(struct sync_fence *fence,
  * if @timeout < 0
  */
 int sync_fence_wait(struct sync_fence *fence, long timeout);
-#else /* !CONFIG_SYNC */
-#define sync_timeline_destroy(obj) do { } while (0)
-#define sync_timeline_signal(obj) do { } while (0)
-static inline struct sync_pt *
-sync_pt_create(struct sync_timeline *parent, int size)
-{
-	return NULL;
-}
-#define sync_pt_free(pt) do { } while (0)
-static inline struct sync_fence *
-sync_fence_create(const char *name, struct sync_pt *pt)
-{
-	return NULL;
-}
-static inline struct sync_fence *sync_fence_merge(const char *name,
-				    struct sync_fence *a, struct sync_fence *b)
-{
-	return NULL;
-}
-static inline struct sync_fence *sync_fence_fdget(int fd)
-{
-	return NULL;
-}
-#define sync_fence_put(fence) do { } while (0)
-#define sync_fence_install(fence, fd) do { } while (0)
-static inline int sync_fence_wait_async(struct sync_fence *fence,
-			  struct sync_fence_waiter *waiter)
-{
-	return -ENODEV;
-}
-static inline int sync_fence_cancel_async(struct sync_fence *fence,
-			    struct sync_fence_waiter *waiter)
-{
-	return -ENODEV;
-}
-static inline int sync_fence_wait(struct sync_fence *fence, long timeout)
-{
-	return -ENODEV;
-}
-#endif /* CONFIG_SYNC */
 
 #ifdef CONFIG_DEBUG_FS
 

@@ -7,6 +7,7 @@
 menuconfig DRM
 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && MMU && HAS_DMA
+	select HDMI
 	select FB_CMDLINE
 	select I2C
 	select I2C_ALGOBIT
@@ -74,14 +75,6 @@ config DRM_KMS_CMA_HELPER
 	select FB_SYS_IMAGEBLIT
 	help
 	  Choose this if you need the KMS CMA helper functions
-
-config DRM_DMA_SYNC
-	bool "DRM DMA Sync"
-	depends on DRM && DMA_SHARED_BUFFER
-	default n
-	help
-	  Choose this option if you want to use fences and reservations for
-	  synchronization of shared dma-buf access between different drivers.
 
 source "drivers/gpu/drm/i2c/Kconfig"
 
@@ -171,8 +164,6 @@ config DRM_SAVAGE
 	help
 	  Choose this option if you have a Savage3D/4/SuperSavage/Pro/Twister
 	  chipset. If M is selected the module will be called savage.
-
-source "drivers/gpu/drm/tgm/Kconfig"
 
 source "drivers/gpu/drm/exynos/Kconfig"
 

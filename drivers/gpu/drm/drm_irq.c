@@ -68,7 +68,7 @@ static unsigned int drm_timestamp_precision = 20;  /* Default to 20 usecs. */
  */
 unsigned int drm_timestamp_monotonic = 1;
 
-static int drm_vblank_offdelay = 50;    /* Default to 5000 msecs. */
+static int drm_vblank_offdelay = 5000;    /* Default to 5000 msecs. */
 
 module_param_named(vblankoffdelay, drm_vblank_offdelay, int, 0600);
 module_param_named(timestamp_precision_usec, drm_timestamp_precision, int, 0600);
@@ -252,11 +252,6 @@ static void vblank_disable_fn(unsigned long arg)
 		return;
 
 	spin_lock_irqsave(&dev->vbl_lock, irqflags);
-
-	if (atomic_read(&vblank->refcount) > 0 && vblank->enabled)
-		DRM_INFO("%s:r[%d]\n", __func__,
-			atomic_read(&vblank->refcount));
-
 	if (atomic_read(&vblank->refcount) == 0 && vblank->enabled) {
 		DRM_DEBUG("disabling vblank on crtc %d\n", crtc);
 		vblank_disable_and_save(dev, crtc);
@@ -895,13 +890,6 @@ static void send_vblank_event(struct drm_device *dev,
 
 	list_add_tail(&e->base.link,
 		      &e->base.file_priv->event_list);
-
-	DRM_DEBUG("[vbl_evt_%d]t[%d]seq[%d]tv[%d %d]r[%d]\n",
-		e->pipe, e->event.base.type,
-		e->event.sequence,
-		e->event.tv_sec, e->event.tv_usec,
-		atomic_read(&dev->vblank[e->pipe].refcount));
-
 	wake_up_interruptible(&e->base.file_priv->event_wait);
 	trace_drm_vblank_event_delivered(e->base.pid, e->pipe,
 					 e->event.sequence);
@@ -1172,10 +1160,6 @@ void drm_vblank_off(struct drm_device *dev, int crtc)
 		drm_vblank_put(dev, e->pipe);
 		send_vblank_event(dev, e, seq, &now);
 	}
-
-	DRM_INFO("%s:crtc[%d]en[%d]r[%d]\n",
-		__func__, crtc, vblank->enabled, atomic_read(&vblank->refcount));
-
 	spin_unlock_irqrestore(&dev->event_lock, irqflags);
 }
 EXPORT_SYMBOL(drm_vblank_off);
@@ -1243,10 +1227,6 @@ void drm_vblank_on(struct drm_device *dev, int crtc)
 	if (atomic_read(&vblank->refcount) != 0 ||
 	    (!dev->vblank_disable_immediate && drm_vblank_offdelay == 0))
 		WARN_ON(drm_vblank_enable(dev, crtc));
-
-	DRM_INFO("%s:crtc[%d]en[%d]r[%d]\n",
-		__func__, crtc, vblank->enabled, atomic_read(&vblank->refcount));
-
 	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 }
 EXPORT_SYMBOL(drm_vblank_on);
@@ -1409,10 +1389,7 @@ static int drm_queue_vblank_event(struct drm_device *dev, int pipe,
 
 	e->pipe = pipe;
 	e->base.pid = current->pid;
-	if (vblwait->request.type & _DRM_VBLANK_FLIP)
-		e->event.base.type = DRM_EVENT_FLIP_COMPLETE;
-	else
-		e->event.base.type = DRM_EVENT_VBLANK;
+	e->event.base.type = DRM_EVENT_VBLANK;
 	e->event.base.length = sizeof e->event;
 	e->event.user_data = vblwait->request.signal;
 	e->base.event = &e->event.base;
@@ -1525,14 +1502,10 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 
 	vblank = &dev->vblank[crtc];
 
-	DRM_DEBUG("[wait_vbl_%d_in]type[0x%x]seq[%d]en[%d]r[%d]\n",
-		crtc, vblwait->request.type, vblwait->request.sequence,
-		vblank->enabled, atomic_read(&vblank->refcount));
-
 	ret = drm_vblank_get(dev, crtc);
 	if (ret) {
 		DRM_DEBUG("failed to acquire vblank counter, %d\n", ret);
-		goto out;
+		return ret;
 	}
 	seq = drm_vblank_count(dev, crtc);
 
@@ -1551,8 +1524,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 		/* must hold on to the vblank ref until the event fires
 		 * drm_vblank_put will be called asynchronously
 		 */
-		ret = drm_queue_vblank_event(dev, crtc, vblwait, file_priv);
-		goto out;
+		return drm_queue_vblank_event(dev, crtc, vblwait, file_priv);
 	}
 
 	if ((flags & _DRM_VBLANK_NEXTONMISS) &&
@@ -1584,13 +1556,6 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 
 done:
 	drm_vblank_put(dev, crtc);
-out:
-	if (ret)
-		DRM_INFO("[wait_vbl_%d_out]ret[%d]type[0x%x]seq[%d]en[%d]r[%d]\n",
-			crtc, ret, vblwait->request.type,
-			vblwait->request.sequence,
-			vblank->enabled, atomic_read(&vblank->refcount));
-
 	return ret;
 }
 

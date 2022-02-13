@@ -550,6 +550,7 @@ config ZSWAP
 	bool "Compressed cache for swap pages (EXPERIMENTAL)"
 	depends on FRONTSWAP && CRYPTO=y
 	select CRYPTO_LZO
+	select CRYPTO_LZ4
 	select ZPOOL
 	default n
 	help
@@ -565,6 +566,24 @@ config ZSWAP
 	  interactions don't cause any known issues on simple memory setups,
 	  they have not be fully explored on the large set of potential
 	  configurations and workloads that exist.
+
+config ZSWAP_COMPACTION
+	bool "Enable runtime zswap compaction"
+	depends on ZSWAP && ZPOOL && ZSMALLOC
+	default n
+
+config ZSWAP_ENABLE_WRITEBACK
+	bool "Enable zswap writeback"
+	depends on ZSWAP
+	default n
+
+config ZSWAP_SAME_PAGE_SHARING
+	bool "Enable same page sharing support in zswap"
+	depends on ZSWAP && !ZSWAP_ENABLE_WRITEBACK
+	default n
+	help
+	  This option adds a feature to share the compressed pages
+	  written to zswap if the pages are found to be same.
 
 config ZPOOL
 	tristate "Common API for compressed memory storage"
@@ -645,3 +664,11 @@ config MAX_STACK_SIZE_MB
 	  changed to a smaller value in which case that is used.
 
 	  A sane initial value is 80 MB.
+
+config MMAP_READAROUND_LIMIT
+	int "Limit mmap readaround upperbound"
+	default 0
+	help
+	  Inappropriate mmap readaround size can hurt device performance
+	  during the sluggish situation. Add the hard upper-limit for
+	  mmap readaround.

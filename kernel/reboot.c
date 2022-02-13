@@ -43,6 +43,7 @@ int reboot_default = 1;
 int reboot_cpu;
 enum reboot_type reboot_type = BOOT_ACPI;
 int reboot_force;
+int ignore_fs_panic = 0; // To prevent kernel panic by EIO during shutdown
 
 /*
  * If set, this is used for preparing the system to power off.
@@ -69,7 +70,13 @@ void kernel_restart_prepare(char *cmd)
 {
 	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, cmd);
 	system_state = SYSTEM_RESTART;
+
+	/* user process should be freezed before device shutdown */
+	events_check_enabled = false;
+	freeze_processes();
+
 	usermodehelper_disable();
+	ignore_fs_panic = 1;
 	device_shutdown();
 }
 
@@ -213,9 +220,6 @@ void migrate_to_reboot_cpu(void)
  */
 void kernel_restart(char *cmd)
 {
-	pr_info("%s: cmd: %s (curr: %s)\n", __func__,
-			(cmd)? cmd : "NULL", current->comm);
-
 	kernel_restart_prepare(cmd);
 	migrate_to_reboot_cpu();
 	syscore_shutdown();
@@ -233,7 +237,13 @@ static void kernel_shutdown_prepare(enum system_states state)
 	blocking_notifier_call_chain(&reboot_notifier_list,
 		(state == SYSTEM_HALT) ? SYS_HALT : SYS_POWER_OFF, NULL);
 	system_state = state;
+
+	/* user process should be freezed before device shutdown */
+	events_check_enabled = false;
+	freeze_processes();
+
 	usermodehelper_disable();
+	ignore_fs_panic = 1;
 	device_shutdown();
 }
 /**
@@ -259,8 +269,6 @@ EXPORT_SYMBOL_GPL(kernel_halt);
  */
 void kernel_power_off(void)
 {
-	pr_info("%s: (curr: %s)\n", __func__, current->comm);
-
 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
 	if (pm_power_off_prepare)
 		pm_power_off_prepare();

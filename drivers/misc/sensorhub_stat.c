@@ -26,6 +26,7 @@
 
 #include <linux/debugfs.h>
 #include <linux/suspend.h>
+#include <linux/slab.h>
 
 #include <linux/sensorhub_stat.h>
 #ifdef CONFIG_SLEEP_MONITOR

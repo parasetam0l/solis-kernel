@@ -468,6 +468,8 @@ extern int s2m_set_dvs_pin(bool gpio_val);
 int gpu_regulator_init(struct exynos_context *platform)
 {
 #ifdef CONFIG_MALI_DVFS
+	int gpu_voltage = 0;
+
 	g3d_regulator = regulator_get(pkbdev->dev, "BUCK1");
 	if (IS_ERR(g3d_regulator)) {
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "%s: failed to get BUCK1 regulator, 0x%p\n", __func__, g3d_regulator);
@@ -476,6 +478,12 @@ int gpu_regulator_init(struct exynos_context *platform)
 	}
 
 	regulator_max_support_volt = regulator_get_max_support_voltage(g3d_regulator);
+	gpu_voltage = platform->gpu_default_vol;
+
+	if (gpu_set_voltage(platform, gpu_voltage) != 0) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "%s: failed to set voltage [%d]\n", __func__, gpu_voltage);
+		return -1;
+	}
 
 	GPU_LOG(DVFS_INFO, DUMMY, 0u, 0u, "regulator initialized\n");
 #endif

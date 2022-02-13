@@ -1371,9 +1371,9 @@ static int kbase_release(struct inode *inode, struct file *filp)
 			kctx->destroying_context = true;
 		}
 	}
-	filp->private_data = NULL;
+    filp->private_data = NULL;
 	mutex_unlock(&kbdev->kctx_list_lock);
-
+	
 	if (!found_element)
 		dev_warn(kbdev->dev, "kctx not in kctx_list\n");
 

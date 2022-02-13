@@ -825,7 +825,7 @@ static int s2mpw01_chg_set_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_ONLINE:
 		charger->cable_type = val->intval;
 		if (charger->cable_type == POWER_SUPPLY_TYPE_BATTERY ||
-				charger->cable_type == POWER_SUPPLY_TYPE_UNKNOWN || charger->cable_type == POWER_SUPPLY_TYPE_USB) {
+				charger->cable_type == POWER_SUPPLY_TYPE_UNKNOWN) {
 			pr_info("%s() [BATT] Type Battery\n", __func__);
 			if (!charger->pdata->charging_current_table)
 				return -EINVAL;

@@ -428,7 +428,6 @@ deps_config := \
 	drivers/gpu/drm/gma500/Kconfig \
 	drivers/gpu/drm/vmwgfx/Kconfig \
 	drivers/gpu/drm/exynos/Kconfig \
-	drivers/gpu/drm/tgm/Kconfig \
 	drivers/gpu/drm/i915/Kconfig \
 	drivers/gpu/drm/nouveau/Kconfig \
 	drivers/gpu/drm/radeon/Kconfig \
@@ -438,10 +437,34 @@ deps_config := \
 	drivers/gpu/ipu-v3/Kconfig \
 	drivers/gpu/host1x/Kconfig \
 	drivers/gpu/vga/Kconfig \
-	drivers/gpu/arm_tizen/t72x/r12p0/platform/Kconfig \
-	drivers/gpu/arm_tizen/t72x/r12p0/Kconfig \
-	drivers/gpu/arm_tizen/t72x/Kconfig \
-	drivers/gpu/arm_tizen/Kconfig \
+	drivers/gpu/arm/t72x/r29p0/platform/exynos/Kconfig \
+	drivers/gpu/arm/t72x/r29p0/platform/Kconfig \
+	drivers/gpu/arm/t72x/r29p0/Kconfig \
+	drivers/gpu/arm/t72x/r28p0/platform/exynos/Kconfig \
+	drivers/gpu/arm/t72x/r28p0/platform/Kconfig \
+	drivers/gpu/arm/t72x/r28p0/Kconfig \
+	drivers/gpu/arm/t72x/r22p0/platform/exynos/Kconfig \
+	drivers/gpu/arm/t72x/r22p0/platform/Kconfig \
+	drivers/gpu/arm/t72x/r22p0/Kconfig \
+	drivers/gpu/arm/t72x/r21p0/platform/exynos/Kconfig \
+	drivers/gpu/arm/t72x/r21p0/platform/Kconfig \
+	drivers/gpu/arm/t72x/r21p0/Kconfig \
+	drivers/gpu/arm/t72x/r15p0/platform/exynos/Kconfig \
+	drivers/gpu/arm/t72x/r15p0/platform/Kconfig \
+	drivers/gpu/arm/t72x/r15p0/Kconfig \
+	drivers/gpu/arm/t72x/r7p0/platform/exynos/Kconfig \
+	drivers/gpu/arm/t72x/r7p0/platform/Kconfig \
+	drivers/gpu/arm/t72x/r7p0/Kconfig \
+	drivers/gpu/arm/t72x/Kconfig \
+	drivers/gpu/arm/t83x/r7p0/platform/Kconfig \
+	drivers/gpu/arm/t83x/r7p0/Kconfig \
+	drivers/gpu/arm/t83x/Kconfig \
+	drivers/gpu/arm/t8xx/r7p0/platform/Kconfig \
+	drivers/gpu/arm/t8xx/r7p0/Kconfig \
+	drivers/gpu/arm/t8xx/r5p0/platform/Kconfig \
+	drivers/gpu/arm/t8xx/r5p0/Kconfig \
+	drivers/gpu/arm/t8xx/Kconfig \
+	drivers/gpu/arm/Kconfig \
 	drivers/char/agp/Kconfig \
 	drivers/video/Kconfig \
 	drivers/media/dvb-frontends/drx39xyj/Kconfig \

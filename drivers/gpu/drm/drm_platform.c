@@ -86,12 +86,6 @@ int drm_platform_set_busid(struct drm_device *dev, struct drm_master *master)
 }
 EXPORT_SYMBOL(drm_platform_set_busid);
 
-int drm_platform_get_irq(struct drm_device *dev)
-{
-	return platform_get_irq(dev->platformdev, 0);
-}
-EXPORT_SYMBOL(drm_platform_get_irq);
-
 /**
  * drm_platform_init - Register a platform device with the DRM subsystem
  * @driver: DRM device driver

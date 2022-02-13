@@ -1502,6 +1502,7 @@ end_range:
 			partial2--;
 		}
 	}
+	return 0;
 
 cleanup:
 	while (p && p > chain) {

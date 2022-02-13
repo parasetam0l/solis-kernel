@@ -411,10 +411,6 @@ int drm_gem_prime_handle_to_fd(struct drm_device *dev,
 		goto out_unlock;
 	}
 
-#ifdef GEM_DEBUG_LOG
-	gem_save_info(GEM_PRIME, obj);
-#endif
-
 	dmabuf = drm_prime_lookup_buf_by_handle(&file_priv->prime, handle);
 	if (dmabuf) {
 		get_dma_buf(dmabuf);
@@ -478,8 +474,6 @@ out_have_handle:
 fail_put_dmabuf:
 	dma_buf_put(dmabuf);
 out:
-	DRM_DEBUG("%s:hdl[%d]obj[%p]buf[%p]fd[%d]\n", "gem_htf",
-		handle, obj, dmabuf, *prime_fd);
 	drm_gem_object_unreference_unlocked(obj);
 out_unlock:
 	mutex_unlock(&file_priv->prime.lock);

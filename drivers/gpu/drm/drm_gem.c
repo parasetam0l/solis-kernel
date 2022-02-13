@@ -86,43 +86,6 @@
 #define DRM_FILE_PAGE_OFFSET_SIZE ((0xFFFFFFFUL >> PAGE_SHIFT) * 16)
 #endif
 
-#ifdef GEM_DEBUG_LOG
-#define GEM_LOG_INFO_MAX 128
-
-struct gem_debug_log {
-	unsigned long long time;
-	pid_t pid;
-	struct drm_gem_object *obj;
-};
-
-atomic_t gem_log_idx[GEM_LOG_MAX] = {
-		ATOMIC_INIT(-1),
-		ATOMIC_INIT(-1),
-		ATOMIC_INIT(-1),
-		ATOMIC_INIT(-1),
-		ATOMIC_INIT(-1) };
-
-struct gem_debug_log gem_log_info[GEM_LOG_MAX][GEM_LOG_INFO_MAX];
-
-void gem_save_info(enum gem_log_state log_state, struct drm_gem_object *obj)
-{
-	int i;
-
-	if (log_state >= GEM_LOG_MAX)
-		return;
-
-	i = atomic_inc_return(&gem_log_idx[log_state]);
-	if (i >= GEM_LOG_INFO_MAX) {
-		atomic_set(&gem_log_idx[log_state], -1);
-		i = 0;
-	}
-
-	gem_log_info[log_state][i].time = cpu_clock(raw_smp_processor_id());
-	gem_log_info[log_state][i].pid = task_pid_nr(current);
-	gem_log_info[log_state][i].obj = obj;
-}
-#endif
-
 /**
  * drm_gem_init - Initialize the GEM device fields
  * @dev: drm_devic structure to initialize
@@ -309,10 +272,6 @@ drm_gem_handle_delete(struct drm_file *filp, u32 handle)
 	}
 	dev = obj->dev;
 
-#ifdef GEM_DEBUG_LOG
-	gem_save_info(GEM_CLOSE, obj);
-#endif
-
 	/* Release reference and decrement refcount. */
 	idr_remove(&filp->object_idr, handle);
 	spin_unlock(&filp->table_lock);
@@ -334,7 +293,7 @@ EXPORT_SYMBOL(drm_gem_handle_delete);
  * @file: drm file-private structure to remove the dumb handle from
  * @dev: corresponding drm_device
  * @handle: the dumb handle to remove
- *
+ * 
  * This implements the ->dumb_destroy kms driver callback for drivers which use
  * gem to manage their backing storage.
  */
@@ -351,7 +310,7 @@ EXPORT_SYMBOL(drm_gem_dumb_destroy);
  * @file_priv: drm file-private structure to register the handle for
  * @obj: object to register
  * @handlep: pionter to return the created handle to the caller
- *
+ * 
  * This expects the dev->object_name_lock to be held already and will drop it
  * before returning. Used to avoid races in establishing new handles when
  * importing an object from either an flink name or a dma-buf.
@@ -722,10 +681,6 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 
 	args->handle = handle;
 	args->size = obj->size;
-
-#ifdef GEM_DEBUG_LOG
-	gem_save_info(GEM_OPEN, obj);
-#endif
 
 	return 0;
 }
