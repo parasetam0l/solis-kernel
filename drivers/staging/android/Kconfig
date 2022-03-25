@@ -21,7 +21,7 @@ config ANDROID_BINDER_IPC
 
 config ANDROID_BINDER_IPC_32BIT
 	bool "Use old 32-bit binder api"
-        default n
+    default n
 	---help---
 	  The Binder API has been changed to support both 32 and 64bit
 	  applications in a mixed environment.

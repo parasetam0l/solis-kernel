@@ -151,14 +151,6 @@ const u32 dphy_timing[][10] = {
 	{498, 4, 21, 10, 5, 4, 6, 7, 3, 6},
 	{490, 4, 21, 10, 5, 4, 6, 7, 3, 6},
 	{480, 4, 21, 9, 4, 4, 6, 7, 3, 6},
-	{470, 3, 20, 9, 4, 5, 6, 7, 3, 5},
-	{460, 3, 20, 9, 4, 4, 5, 7, 3, 5},
-	{450, 3, 19, 9, 4, 4, 5, 7, 3, 5},
-	{440, 3, 19, 9, 4, 4, 5, 7, 3, 5},
-	{430, 3, 18, 9, 4, 4, 5, 7, 3, 5},
-	{420, 3, 18, 9, 4, 4, 5, 6, 3, 5},
-	{410, 3, 17, 9, 4, 4, 5, 6, 3, 5},
-	{400, 3, 17, 9, 4, 4, 4, 6, 3, 5},
 	{384, 3, 17, 9, 4, 3, 4, 6, 2, 4},
 };
 
@@ -466,13 +458,13 @@ void dsim_reg_set_config(u32 id, struct decon_lcd *lcd_info, u32 data_lane_cnt)
 	if (lcd_info->mode == DECON_VIDEO_MODE) {
 		dsim_reg_disable_hsa(id, 0);
 		dsim_reg_disable_hbp(id, 0);
-		dsim_reg_disable_hfp(id, 1);
+		dsim_reg_disable_hfp(id, 0);
 		dsim_reg_disable_hse(id, 0);
 		dsim_reg_set_hsync_preserve(id, 0);
 		dsim_reg_set_burst_mode(id, 1);
 		dsim_reg_set_sync_inform(id, 0);
 		dsim_reg_enable_mflush(id, 1);
-		dsim_reg_enable_clocklane_stop_start(id, lcd_info->clklane_onoff);
+		dsim_reg_enable_clocklane_stop_start(id, 1);
 	} else if (lcd_info->mode == DECON_MIPI_COMMAND_MODE) {
 		dsim_reg_enable_noncontinuous_clock(id, 1);
 		dsim_reg_enable_mflush(id, 1);
@@ -857,7 +849,7 @@ void dsim_reg_force_dphy_stop_state(u32 id, u32 en)
 	dsim_write_mask(id, DSIM_ESCMODE, val, DSIM_ESCMODE_FORCE_STOP_STATE);
 }
 
-void dsim_reg_wr_tx_header(u32 id, u32 data_id, u32 data0, u32 data1)
+void dsim_reg_wr_tx_header(u32 id, u32 data_id, unsigned long data0, u32 data1)
 {
 	u32 val = DSIM_PKTHDR_ID(data_id) | DSIM_PKTHDR_DATA0(data0) |
 		DSIM_PKTHDR_DATA1(data1);
@@ -1009,10 +1001,9 @@ int dsim_reg_init(u32 id, struct decon_lcd *lcd_info, u32 data_lane_cnt, struct 
 	 */
 	if (dsim_read_mask(id, DSIM_CLKCTRL, DSIM_CLKCTRL_TX_REQUEST_HSCLK)) {
 		dsim_info("dsim%d is probed with LCD ON UBOOT\n", id);
-		if(lcd_info->mode == DECON_MIPI_COMMAND_MODE)
-			dsim_reg_init_probe(id, lcd_info, data_lane_cnt, clks);
-			/* If reg_init_probe() sequence is not equal to reg_init()
-			   then just return. */
+		dsim_reg_init_probe(id, lcd_info, data_lane_cnt, clks);
+		/* If reg_init_probe() sequence is not equal to reg_init()
+		   then just return. */
 		ret = -EBUSY;
 	}
 

@@ -16,6 +16,7 @@
 #include "decon.h"
 #include "dsim.h"
 #include "decon_helper.h"
+#include "./panels/lcd_ctrl.h"
 #include <video/mipi_display.h>
 
 inline int decon_is_no_bootloader_fb(struct decon_device *decon)
@@ -271,7 +272,6 @@ void DISP_SS_EVENT_LOG(disp_ss_event_t type, struct v4l2_subdev *sd, ktime_t tim
 	case DISP_EVT_DECON_RESUME:
 	case DISP_EVT_LINECNT_ZERO:
 	case DISP_EVT_TRIG_MASK:
-	case DISP_EVT_TRIG_UNMASK:
 	case DISP_EVT_DECON_FRAMEDONE:
 	case DISP_EVT_DECON_FRAMEDONE_WAIT:
 	case DISP_EVT_ACT_VSYNC:
@@ -280,6 +280,7 @@ void DISP_SS_EVENT_LOG(disp_ss_event_t type, struct v4l2_subdev *sd, ktime_t tim
 	case DISP_EVT_ACT_PROT:
 	case DISP_EVT_DEACT_PROT:
 	case DISP_EVT_UPDATE_TIMEOUT:
+	case DISP_EVT_LINECNT_TIMEOUT:
 	case DISP_EVT_VSYNC_TIMEOUT:
 	case DISP_EVT_VSTATUS_TIMEOUT:
 		disp_ss_event_log_decon(type, sd, time);
@@ -428,7 +429,6 @@ void DISP_SS_EVENT_LOG_CMD(struct v4l2_subdev *sd, u32 cmd_id, unsigned long dat
 
 	log->time = ktime_get();
 	log->type = DISP_EVT_DSIM_COMMAND;
-	log->data.cmd_buf.id = cmd_id;
 	if (cmd_id == MIPI_DSI_DCS_LONG_WRITE)
 		log->data.cmd_buf.buf = *(u8 *)(data);
 	else
@@ -542,9 +542,6 @@ void DISP_SS_EVENT_SHOW(struct seq_file *s, struct decon_device *decon,
 		case DISP_EVT_TRIG_MASK:
 			seq_printf(s, "%20s  %20s", "TRIG_MASK", "-\n");
 			break;
-		case DISP_EVT_TRIG_UNMASK:
-			seq_printf(s, "%20s  %20s", "TRIG_UNMASK", "-\n");
-			break;
 		case DISP_EVT_DECON_FRAMEDONE_WAIT:
 			seq_printf(s, "%20s  %20s", "FRAMEDONE_WAIT", "-\n");
 			break;
@@ -557,8 +554,8 @@ void DISP_SS_EVENT_SHOW(struct seq_file *s, struct decon_device *decon,
 		case DISP_EVT_UPDATE_TIMEOUT:
 			seq_printf(s, "%20s  %20s", "UPDATE_TIMEOUT", "-\n");
 			break;
-		case DISP_EVT_LINECNT_ZERO:
-			seq_printf(s, "%20s  %20s", "LINECNT_ZERO", "-\n");
+		case DISP_EVT_LINECNT_TIMEOUT:
+			seq_printf(s, "%20s  %20s", "LINECNT_TIMEOUT", "-\n");
 			break;
 		case DISP_EVT_UPDATE_HANDLER:
 			seq_printf(s, "%20s  ", "UPDATE_HANDLER");
@@ -647,25 +644,4 @@ void DISP_SS_EVENT_SHOW(struct seq_file *s, struct decon_device *decon,
 	return;
 }
 
-#if defined(CONFIG_DEBUG_LIST)
-void DISP_SS_DUMP(u32 type)
-{
-	struct decon_device *decon = get_decon_drvdata(0);
-
-	if (!decon || decon->disp_dump & BIT(type))
-		return;
-
-	switch (type) {
-	case DISP_DUMP_DECON_UNDERRUN:
-	case DISP_DUMP_LINECNT_ZERO:
-	case DISP_DUMP_VSYNC_TIMEOUT:
-	case DISP_DUMP_VSTATUS_TIMEOUT:
-	case DISP_DUMP_COMMAND_WR_TIMEOUT:
-	case DISP_DUMP_COMMAND_RD_ERROR:
-		decon_dump(decon);
-		BUG();
-		break;
-	}
-}
-#endif
 #endif

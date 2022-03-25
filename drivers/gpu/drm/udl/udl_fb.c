@@ -256,15 +256,10 @@ static int udl_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
 {
 	unsigned long start = vma->vm_start;
 	unsigned long size = vma->vm_end - vma->vm_start;
-	unsigned long offset;
+	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
 	unsigned long page, pos;
 
-	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
-		return -EINVAL;
-
-	offset = vma->vm_pgoff << PAGE_SHIFT;
-
-	if (offset > info->fix.smem_len || size > info->fix.smem_len - offset)
+	if (offset + size > info->fix.smem_len)
 		return -EINVAL;
 
 	pos = (unsigned long)info->fix.smem_start + offset;
@@ -341,7 +336,7 @@ static int udl_fb_open(struct fb_info *info, int user)
 
 		struct fb_deferred_io *fbdefio;
 
-		fbdefio = kzalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
+		fbdefio = kmalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
 
 		if (fbdefio) {
 			fbdefio->delay = DL_DEFIO_WRITE_DELAY;
@@ -551,7 +546,7 @@ static int udlfb_create(struct drm_fb_helper *helper,
 
 	return ret;
 out_gfree:
-	drm_gem_object_unreference_unlocked(&ufbdev->ufb.obj->base);
+	drm_gem_object_unreference(&ufbdev->ufb.obj->base);
 out:
 	return ret;
 }
@@ -594,27 +589,19 @@ int udl_fbdev_init(struct drm_device *dev)
 
 	ret = drm_fb_helper_init(dev, &ufbdev->helper,
 				 1, 1);
-	if (ret)
-		goto free;
+	if (ret) {
+		kfree(ufbdev);
+		return ret;
 
-	ret = drm_fb_helper_single_add_all_connectors(&ufbdev->helper);
-	if (ret)
-		goto fini;
+	}
+
+	drm_fb_helper_single_add_all_connectors(&ufbdev->helper);
 
 	/* disable all the possible outputs/crtcs before entering KMS mode */
 	drm_helper_disable_unused_functions(dev);
 
-	ret = drm_fb_helper_initial_config(&ufbdev->helper, bpp_sel);
-	if (ret)
-		goto fini;
-
+	drm_fb_helper_initial_config(&ufbdev->helper, bpp_sel);
 	return 0;
-
-fini:
-	drm_fb_helper_fini(&ufbdev->helper);
-free:
-	kfree(ufbdev);
-	return ret;
 }
 
 void udl_fbdev_cleanup(struct drm_device *dev)

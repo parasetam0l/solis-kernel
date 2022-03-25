@@ -33,9 +33,9 @@
 #define VCLKCON0_VLCKFREE			(1 << 0)
 
 #define VCLKCON1				(0x0014)
-#define VCLKCON1_DENOM_VALUE_OF_CLK_F(_v)  ((_v) << 16)
-#define VCLKCON1_NUM_VALUE_OF_CLK_F(_v)   ((_v) << 0)
-#define VCLKCON1_DENOM_VALUE_OF_CLK_F_MASK  (0x3ff << 16)
+#define VCLKCON1_DENOM_VALUE_OF_CLK_F(_v)		((_v) << 16)
+#define VCLKCON1_NUM_VALUE_OF_CLK_F(_v)			((_v) << 0)
+#define VCLKCON1_DENOM_VALUE_OF_CLK_F_MASK		(0x3ff << 16)
 #define VCLKCON1_NUM_VALUE_OF_CLK_F_MASK        (0x3ff << 0)
 
 #define VCLKCON2				(0x0018)

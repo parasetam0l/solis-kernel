@@ -20,7 +20,6 @@
 #ifdef CONFIG_PMAC_BACKLIGHT
 #include <asm/backlight.h>
 #endif
-#include <linux/delay.h>
 
 static struct list_head backlight_dev_list;
 static struct mutex backlight_dev_list_mutex;
@@ -197,63 +196,6 @@ static ssize_t brightness_store(struct device *dev,
 }
 static DEVICE_ATTR_RW(brightness);
 
-static ssize_t multi_brightness_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct backlight_device *bd = to_backlight_device(dev);
-	unsigned int  tar_br, steps, delay, i = 0, max_delay = 300000;
-	int div, rc;
-
-	if (!bd->ops) {
-		rc = -ENXIO;
-		goto err;
-	}
-
-	if (sscanf(buf, "%d %d %d", &tar_br, &steps, &delay) != 3) {
-		rc = -EINVAL;
-		goto err;
-	}
-
-	pr_info("%s: tar_br[%d]steps[%d]delay[%d]\n", __func__,
-		tar_br, steps, delay);
-
-	if (tar_br > bd->props.max_brightness || delay > max_delay ||
-		!steps || steps > bd->props.max_brightness) {
-		rc = -EINVAL;
-		goto err;
-	}
-
-	mutex_lock(&bd->ops_lock);
-	div =  (int)(tar_br - bd->props.brightness) / (int)steps;
-	pr_debug("%s: cur_br[%d]div[%d]\n", __func__,
-		bd->props.brightness, div);
-
-	if (div == 0 || bd->props.brightness == tar_br)
-		goto bypass;
-
-	for (i = 0; i < steps; i++) {
-		bd->props.brightness += div;
-		backlight_update_status(bd);
-		if (i != steps - 1 && delay)
-			usleep_range(delay, delay + 1);
-	}
-
-bypass:
-	if (bd->props.brightness != tar_br) {
-		if (i && delay)
-			usleep_range(delay, delay + 1);
-		bd->props.brightness = tar_br;
-		backlight_update_status(bd);
-	}
-
-	rc = count;
-	mutex_unlock(&bd->ops_lock);
-	backlight_generate_event(bd, BACKLIGHT_UPDATE_SYSFS);
-err:
-	return rc;
-}
-static DEVICE_ATTR_WO(multi_brightness);
-
 static ssize_t type_show(struct device *dev, struct device_attribute *attr,
 		char *buf)
 {
@@ -335,7 +277,6 @@ static struct attribute *bl_device_attrs[] = {
 	&dev_attr_brightness.attr,
 	&dev_attr_actual_brightness.attr,
 	&dev_attr_max_brightness.attr,
-	&dev_attr_multi_brightness.attr,
 	&dev_attr_type.attr,
 	NULL,
 };

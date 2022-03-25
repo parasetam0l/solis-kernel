@@ -15,8 +15,8 @@ config EXYNOS_DECON_LCD_S6E36W1X01
 	tristate "S6E36W1X01 AMOLED HD LCD driver(360 x 360)"
 
 config EXYNOS_DECON_LCD_S6E36W2X01
-    depends on EXYNOS_DECON_LCD && EXYNOS_MIPI_DSI
-    tristate "S6E36W2X01 AMOLED HD LCD driver(360 x 360)"
+        depends on EXYNOS_DECON_LCD && EXYNOS_MIPI_DSI
+        tristate "S6E36W2X01 AMOLED HD LCD driver(360 x 360)"
 
 config COPR_SUPPORT
 	bool "S6E36W2X01 Panel COPR Support"

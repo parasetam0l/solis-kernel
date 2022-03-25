@@ -417,7 +417,7 @@ void __init setup_arch(char **cmdline_p)
 {
     char recoverymode_check[]="bootmode=recovery";
 
-    char *extra_parameters = " androidboot.selinux=permissive androidboot.hardware=solis androidboot.dm_verity=disabled selinux=1 enforcing=0 serialno=012345678 androidboot.boot_devices=13540000.dwmmc0 ";
+    char *extra_parameters = " androidboot.selinux=permissive androidboot.hardware=samsungexynos7570 androidboot.dm_verity=disabled selinux=1 enforcing=0 serialno=012345678 androidboot.boot_devices=13540000.dwmmc0 video=U:360x360p-56 ";
     //char *root_parameter = "console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p11 rw rootfstype=ext4 rootwait";
     char *normal_boot_parameters = " console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p13 rw rootfstype=ext4 rootwait security=selinux ";
     char *recovery_boot_parameters = " console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p12 rw rootfstype=ext4 rootwait androidboot.boot_recovery=1 security=selinux ";

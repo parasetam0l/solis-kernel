@@ -437,23 +437,6 @@ deps_config := \
 	drivers/gpu/ipu-v3/Kconfig \
 	drivers/gpu/host1x/Kconfig \
 	drivers/gpu/vga/Kconfig \
-	drivers/gpu/arm/t72x/r29p0/platform/exynos/Kconfig \
-	drivers/gpu/arm/t72x/r29p0/platform/Kconfig \
-	drivers/gpu/arm/t72x/r29p0/Kconfig \
-	drivers/gpu/arm/t72x/r28p0/platform/exynos/Kconfig \
-	drivers/gpu/arm/t72x/r28p0/platform/Kconfig \
-	drivers/gpu/arm/t72x/r28p0/Kconfig \
-	drivers/gpu/arm/t72x/r22p0/platform/exynos/Kconfig \
-	drivers/gpu/arm/t72x/r22p0/platform/Kconfig \
-	drivers/gpu/arm/t72x/r22p0/Kconfig \
-	drivers/gpu/arm/t72x/r21p0/platform/exynos/Kconfig \
-	drivers/gpu/arm/t72x/r21p0/platform/Kconfig \
-	drivers/gpu/arm/t72x/r21p0/Kconfig \
-	drivers/gpu/arm/t72x/r15p0/platform/exynos/Kconfig \
-	drivers/gpu/arm/t72x/r15p0/platform/Kconfig \
-	drivers/gpu/arm/t72x/r15p0/Kconfig \
-	drivers/gpu/arm/t72x/r7p0/platform/exynos/Kconfig \
-	drivers/gpu/arm/t72x/r7p0/platform/Kconfig \
 	drivers/gpu/arm/t72x/r7p0/Kconfig \
 	drivers/gpu/arm/t72x/Kconfig \
 	drivers/gpu/arm/t83x/r7p0/platform/Kconfig \

@@ -1,10 +1,3 @@
-obj-$(CONFIG_EXYNOS_DECON_LCD) += dsim_panel.o
-obj-$(CONFIG_EXYNOS_DECON_MDNIE_LITE) += mdnie_lite.o
-obj-$(CONFIG_DISPLAY_USE_INFO) += dpui.o
-
-obj-$(and $(CONFIG_EXYNOS_DECON_MDNIE_LITE),$(CONFIG_SEC_GPIO_DVS),$(subst undefined,y,$(origin CONFIG_SAMSUNG_PRODUCT_SHIP))) += dd_mdnie.o
-obj-$(and $(CONFIG_SEC_GPIO_DVS),$(subst undefined,y,$(origin CONFIG_SAMSUNG_PRODUCT_SHIP))) += dd_lcd.o dd_backlight.o dd_dpu.o dd_param.o
-
 obj-$(CONFIG_EXYNOS_DECON_LCD_S6E8AA0)	+= s6e8aa0_mipi_lcd.o s6e8aa0_lcd_ctrl.o
 obj-$(CONFIG_EXYNOS_DECON_LCD_S6E8AA5X01)	+= s6e8aa5x01_mipi_lcd.o s6e8aa5x01_lcd_ctrl.o
 ifdef CONFIG_POP

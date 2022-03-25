@@ -15,8 +15,15 @@
 #include "s6e36w2x01_param.h"
 #include "s6e36w2x01_mipi_lcd.h"
 
+/* use FW_TEST definition when you test CAL on firmware */
+/* #define FW_TEST */
+#ifdef FW_TEST
+#include "../dsim_fw.h"
+#include "mipi_display.h"
+#else
 #include "../dsim.h"
 #include <video/mipi_display.h>
+#endif
 
 #define LDI_ID_REG	0x04
 #define LDI_ID_LEN	3
