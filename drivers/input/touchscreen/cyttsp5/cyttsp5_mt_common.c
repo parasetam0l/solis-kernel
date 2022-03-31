@@ -63,6 +63,12 @@ static void report_sumsize_palm(struct cyttsp5_mt_data *md, bool palm)
 {
 	dev_dbg(md->dev, "%s: palm=%d\n", __func__, palm);
 	input_report_abs(md->input, ABS_MT_PALM, palm);
+	if (palm){
+        input_report_key(md->input, KEY_SLEEP, 1);
+        input_sync(md->input);
+        input_report_key(md->input, KEY_SLEEP, 0);
+        input_sync(md->input);
+    }
 }
 #endif
 
@@ -723,6 +729,8 @@ static int cyttsp5_setup_input_device(struct device *dev)
 	__set_bit(BTN_TOUCH, md->input->keybit);
 #endif
 
+    __set_bit(KEY_SLEEP, md->input->keybit);
+
 	/* If virtualkeys enabled, don't use all screen */
 	if (md->pdata->flags & CY_MT_FLAG_VKEYS) {
 		max_x_tmp = md->pdata->vkeys_x;
@@ -778,6 +786,7 @@ static int cyttsp5_setup_input_device(struct device *dev)
 				__func__, signal, min, max);
 #endif
 
+    input_set_capability(md->input, EV_KEY, KEY_SLEEP);
 	input_mt_init_slots(md->input,
 			md->si->tch_abs[CY_TCH_T].max, 0);
 
