@@ -15998,15 +15998,7 @@ int dhd_set_ap_isolate(dhd_pub_t *dhdp, uint32 idx, int val)
 
 #ifdef DHD_FW_COREDUMP
 #ifdef CUSTOMER_HW4_DEBUG
-#ifdef PLATFORM_SLP
-#define MEMDUMPINFO "/opt/etc/.memdump.info"
-#else
-#define MEMDUMPINFO "/data/.memdump.info"
-#endif /* PLATFORM_SLP */
-#elif (defined(BOARD_PANDA) || defined(__ARM_ARCH_7A__))
-#define MEMDUMPINFO "/data/misc/wifi/.memdump.info"
-#else
-#define MEMDUMPINFO "/installmedia/.memdump.info"
+#define MEMDUMPINFO "/data/bcmdhd/.memdump.info"
 #endif /* CUSTOMER_HW4_DEBUG */
 
 void dhd_get_memdump_info(dhd_pub_t *dhd)
@@ -16244,13 +16236,7 @@ exit:
 
 #ifdef BCMASSERT_LOG
 #ifdef CUSTOMER_HW4_DEBUG
-#ifdef PLATFORM_SLP
-#define ASSERTINFO "/opt/etc/.assert.info"
-#else
-#define ASSERTINFO "/data/.assert.info"
-#endif /* PLATFORM_SLP */
-#else
-#define ASSERTINFO "/installmedia/.assert.info"
+#define ASSERTINFO "/data/bcmdhd/.assert.info"
 #endif /* CUSTOMER_HW4_DEBUG */
 void dhd_get_assert_info(dhd_pub_t *dhd)
 {

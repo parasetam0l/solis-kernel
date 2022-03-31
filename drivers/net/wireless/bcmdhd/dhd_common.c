@@ -4582,15 +4582,8 @@ exit:
 	return err;
 }
 #ifdef DHD_USE_CLMINFO_PARSER
-#ifdef CUSTOMER_HW4
-#ifdef PLATFORM_SLP
-#define CLMINFO_PATH "/lib/firmware/.clminfo"
-#else
-#define CLMINFO_PATH "/system/etc/wifi/.clminfo"
-#endif /* PLATFORM_SLP */
-#else
-#define CLMINFO_PATH "/installmedia/.clminfo"
-#endif /* CUSTOMER_HW4 */
+
+#define CLMINFO_PATH "/system/vendor/firmware/.clminfo"
 
 extern struct cntry_locales_custom translate_custom_table[NUM_OF_COUNTRYS];
 

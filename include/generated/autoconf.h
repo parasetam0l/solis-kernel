@@ -273,7 +273,7 @@
 #define CONFIG_NFC 1
 #define CONFIG_ATOMIC64_SELFTEST 1
 #define CONFIG_BACKLIGHT_GENERIC 1
-#define CONFIG_BCMDHD_FW_PATH "/lib/firmware/mfg_fw.bin"
+#define CONFIG_BCMDHD_FW_PATH "/system/vendor/firmware/mfg_fw.bin"
 #define CONFIG_TEXTSEARCH_BM 1
 #define CONFIG_NF_CONNTRACK_PROCFS 1
 #define CONFIG_RFKILL 1
@@ -523,7 +523,7 @@
 #define CONFIG_RTC_CLASS 1
 #define CONFIG_TMPFS_XATTR 1
 #define CONFIG_MMC_DW_IDMAC 1
-#define CONFIG_BCMDHD_NVRAM_PATH "/lib/firmware/mfg_nvram.txt"
+#define CONFIG_BCMDHD_NVRAM_PATH "/system/vendor/firmware/mfg_nvram.txt"
 #define CONFIG_ARM_AMBA 1
 #define CONFIG_CPU_PM 1
 #define CONFIG_IOMMU_HELPER 1
@@ -627,7 +627,7 @@
 #define CONFIG_HAVE_CLK_PREPARE 1
 #define CONFIG_NETFILTER_XT_MATCH_IPRANGE 1
 #define CONFIG_FRONTSWAP 1
-#define CONFIG_BCMDHD_BTFW_PATH "/lib/firmware/43012B0.hex"
+#define CONFIG_BCMDHD_BTFW_PATH "/system/vendor/firmware/43012B0.hex"
 #define CONFIG_NF_CONNTRACK_TFTP 1
 #define CONFIG_NOP_TRACER 1
 #define CONFIG_BACKLIGHT_LCD_SUPPORT 1

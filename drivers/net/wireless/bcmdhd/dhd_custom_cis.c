@@ -46,18 +46,10 @@
 
 #ifdef DHD_USE_CISINFO
 
-/* File Location to keep each information */
-#ifdef PLATFORM_SLP
-#define MACINFO "/opt/etc/.mac.info"
+#define MACINFO "/data/bcmdhd/.mac.info"
 #define MACINFO_EFS "/csa/.mac.info"
-#define CIDINFO "/opt/etc/.cid.info"
-#define REVINFO "/opt/etc/.rev"
-#else /* OEM_ANDROID */
-#define MACINFO "/data/.mac.info"
-#define MACINFO_EFS "/efs/wifi/.mac.info"
-#define CIDINFO "/data/.cid.info"
-#define	REVINFO "/data/.rev"
-#endif
+#define CIDINFO "/data/bcmdhd/.cid.info"
+#define REVINFO "/data/bcmdhd/.rev"
 
 /* Definitions for MAC address */
 #define MAC_BUF_SIZE 20

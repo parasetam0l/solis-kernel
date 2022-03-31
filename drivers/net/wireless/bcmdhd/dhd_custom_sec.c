@@ -357,21 +357,12 @@ void get_customized_country_code(void *adapter, char *country_iso_code, wl_count
 	return;
 }
 
-#ifdef PLATFORM_SLP
-#define PSMINFO "/opt/etc/.psm.info"
-#define REVINFO "/opt/etc/.rev"
-#define WIFIVERINFO "/opt/etc/.wifiver.info"
-#define ANTINFO "/opt/etc/.ant.info"
-#define RSDBINFO "/opt/etc/.rsdb.info"
-#define LOGTRACEINFO "/opt/etc/.logtrace.info"
-#else
-#define PSMINFO "/data/.psm.info"
-#define REVINFO "/data/.rev"
-#define WIFIVERINFO "/data/.wifiver.info"
-#define ANTINFO "/data/.ant.info"
-#define RSDBINFO "/data/.rsdb.info"
-#define LOGTRACEINFO "/data/.logtrace.info"
-#endif /* PLATFORM_SLP */
+#define PSMINFO "/data/bcmdhd/.psm.info"
+#define REVINFO "/data/bcmdhd/.rev"
+#define WIFIVERINFO "/data/bcmdhd/.wifiver.info"
+#define ANTINFO "/data/bcmdhd/.ant.info"
+#define RSDBINFO "/data/bcmdhd/.rsdb.info"
+#define LOGTRACEINFO "/data/bcmdhd/.logtrace.info"
 
 #ifdef DHD_PM_CONTROL_FROM_FILE
 extern bool g_pm_control;
@@ -393,7 +384,7 @@ void sec_control_pm(dhd_pub_t *dhd, uint *power_mode)
 		/* Enable PowerSave Mode */
 		dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)power_mode,
 			sizeof(uint), TRUE, 0);
-		DHD_ERROR(("[WIFI_SEC] %s: /data/.psm.info doesn't exist"
+		DHD_ERROR(("[WIFI_SEC] %s: /data/bcmdhd/.psm.info doesn't exist"
 			" so set PM to %d\n",
 			__FUNCTION__, *power_mode));
 		return;
@@ -575,7 +566,7 @@ int dhd_sel_ant_from_file(dhd_pub_t *dhd)
 
 #ifdef RSDB_MODE_FROM_FILE
 /*
- * RSDBOFFINFO = /data/.rsdb.info
+ * RSDBOFFINFO = /data/bcmdhd/.rsdb.info
  *  - rsdb_mode = 1            => Don't change RSDB mode / RSDB stay as turn on
  *  - rsdb_mode = 0            => Trun Off RSDB mode
  *  - file not exist          => Don't change RSDB mode / RSDB stay as turn on
@@ -633,7 +624,7 @@ int dhd_rsdb_mode_from_file(dhd_pub_t *dhd)
 
 #ifdef LOGTRACE_FROM_FILE
 /*
- * LOGTRACEINFO = /data/.logtrace.info
+ * LOGTRACEINFO = /data/bcmdhd/.logtrace.info
  *  - logtrace = 1            => Enable LOGTRACE Event
  *  - logtrace = 0            => Disable LOGTRACE Event
  *  - file not exist          => Disable LOGTRACE Event
@@ -691,24 +682,24 @@ int sec_get_param_wfa_cert(dhd_pub_t *dhd, int mode, uint* read_val)
 
 	switch (mode) {
 		case SET_PARAM_BUS_TXGLOM_MODE:
-			filepath = "/data/.bustxglom.info";
+			filepath = "/data/bcmdhd/.bustxglom.info";
 			break;
 		case SET_PARAM_ROAMOFF:
-			filepath = "/data/.roamoff.info";
+			filepath = "/data/bcmdhd/.roamoff.info";
 			break;
 #ifdef USE_WL_FRAMEBURST
 		case SET_PARAM_FRAMEBURST:
-			filepath = "/data/.frameburst.info";
+			filepath = "/data/bcmdhd/.frameburst.info";
 			break;
 #endif /* USE_WL_FRAMEBURST */
 #ifdef USE_WL_TXBF
 		case SET_PARAM_TXBF:
-			filepath = "/data/.txbf.info";
+			filepath = "/data/bcmdhd/.txbf.info";
 			break;
 #endif /* USE_WL_TXBF */
 #ifdef PROP_TXSTATUS
 		case SET_PARAM_PROPTX:
-			filepath = "/data/.proptx.info";
+			filepath = "/data/bcmdhd/.proptx.info";
 			break;
 #endif /* PROP_TXSTATUS */
 		default:
@@ -924,7 +915,7 @@ dhd_force_disable_singlcore_scan(dhd_pub_t *dhd)
 {
 	int ret = 0;
 	struct file *fp = NULL;
-	char *filepath = "/data/.cid.info";
+	char *filepath = "/data/bcmdhd/.cid.info";
 	s8 iovbuf[WL_EVENTING_MASK_LEN + 12];
 	char vender[10] = {0, };
 	uint32 pm_bcnrx = 0;
@@ -935,7 +926,7 @@ dhd_force_disable_singlcore_scan(dhd_pub_t *dhd)
 
 	fp = filp_open(filepath, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		DHD_ERROR(("/data/.cid.info file open error\n"));
+		DHD_ERROR(("/data/bcmdhd/.cid.info file open error\n"));
 	} else {
 		ret = kernel_read(fp, 0, (char *)vender, 5);
 
