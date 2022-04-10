@@ -88,3 +88,10 @@ config PROC_DLOG
 
 config PROC_FSLOG_LOWMEM
 	bool "Enable fslog for low memory devices"
+
+config PROC_UID
+	bool "Include /proc/uid/ files"
+	default y
+	depends on PROC_FS && RT_MUTEXES
+	help
+	Provides aggregated per-uid information under /proc/uid.

@@ -87,6 +87,7 @@
 #include <linux/slab.h>
 #include <linux/flex_array.h>
 #include <linux/posix-timers.h>
+#include <linux/cpufreq_times.h>
 #include <linux/task_integrity.h>
 #include <linux/proca.h>
 #ifdef CONFIG_HARDWALL
@@ -2904,6 +2905,11 @@ static const struct pid_entry tgid_base_stuff[] = {
 #ifdef CONFIG_CHECKPOINT_RESTORE
 	REG("timers",	  S_IRUGO, proc_timers_operations),
 #endif
+#ifdef CONFIG_CPU_FREQ_TIMES
+	ONE("time_in_state", 0444, proc_time_in_state_show),
+	ONE("concurrent_active_time", 0444, proc_concurrent_active_time_show),
+	ONE("concurrent_policy_time", 0444, proc_concurrent_policy_time_show),
+#endif
 #ifdef CONFIG_FIVE
 	DIR("integrity", S_IRUGO|S_IXUGO, proc_integrity_inode_operations,
 			proc_integrity_operations),
@@ -3287,6 +3293,11 @@ static const struct pid_entry tid_base_stuff[] = {
 	REG("gid_map",    S_IRUGO|S_IWUSR, proc_gid_map_operations),
 	REG("projid_map", S_IRUGO|S_IWUSR, proc_projid_map_operations),
 	REG("setgroups",  S_IRUGO|S_IWUSR, proc_setgroups_operations),
+#endif
+#ifdef CONFIG_CPU_FREQ_TIMES
+	ONE("time_in_state", 0444, proc_time_in_state_show),
+	ONE("concurrent_active_time", 0444, proc_concurrent_active_time_show),
+	ONE("concurrent_policy_time", 0444, proc_concurrent_policy_time_show),
 #endif
 };
 

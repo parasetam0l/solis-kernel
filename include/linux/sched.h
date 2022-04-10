@@ -1525,6 +1525,13 @@ struct task_struct {
 
 	cputime_t utime, stime, utimescaled, stimescaled;
 	cputime_t gtime;
+	#ifdef CONFIG_CPU_FREQ_TIMES
+    	u64 *time_in_state;
+    	unsigned int max_state;
+    	u64 *concurrent_active_time;
+    	u64 *concurrent_policy_time;
+    #endif
+
 	unsigned long long cpu_power;
 #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
 	struct cputime prev_cputime;

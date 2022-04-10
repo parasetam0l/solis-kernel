@@ -16,7 +16,7 @@
 #define TI_EXEC_DOMAIN 24 /* offsetof(struct thread_info, exec_domain)	// */
 #define TI_CPU 84 /* offsetof(struct thread_info, cpu)	// */
 
-#define THREAD_CPU_CONTEXT 1552 /* offsetof(struct task_struct, thread.cpu_context)	// */
+#define THREAD_CPU_CONTEXT 1584 /* offsetof(struct task_struct, thread.cpu_context)	// */
 
 #define S_X0 0 /* offsetof(struct pt_regs, regs[0])	// */
 #define S_X1 8 /* offsetof(struct pt_regs, regs[1])	// */

@@ -6,6 +6,9 @@ obj-$(CONFIG_PM_OPP)			+= cpufreq_opp.o
 # CPUfreq stats
 obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
 
+# CPUfreq times
+obj-$(CONFIG_CPU_FREQ_TIMES)		+= cpufreq_times.o
+
 # CPUfreq governors
 obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE)	+= cpufreq_performance.o
 obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+= cpufreq_powersave.o
