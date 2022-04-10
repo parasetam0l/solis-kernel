@@ -4,3 +4,4 @@ arch/arm64/boot/dzImage
 include/config/kernel.release
 include/generated/compile.h
 include/generated/utsrelease.h
+*.tar
