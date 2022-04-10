@@ -902,8 +902,6 @@ static int print_wakeup_source_stats(struct seq_file *m,
 	unsigned long active_count;
 	ktime_t active_time;
 	ktime_t prevent_sleep_time;
-	int ret;
-	char ws_name[21] = {0,};
 
 	spin_lock_irqsave(&ws->lock, flags);
 
@@ -926,18 +924,17 @@ static int print_wakeup_source_stats(struct seq_file *m,
 		active_time = ktime_set(0, 0);
 	}
 
-	snprintf(ws_name, 20, ws->name);
-	ret = seq_printf(m, "%-20s %12lu    %11lu     %12lu    %12lu    "
-			"%12lld    %10lld      %8lld        %11lld     %20lld\n",
-			ws_name, active_count, ws->event_count,
-			ws->wakeup_count, ws->expire_count,
-			ktime_to_ms(active_time), ktime_to_ms(total_time),
-			ktime_to_ms(max_time), ktime_to_ms(ws->last_time),
-			ktime_to_ms(prevent_sleep_time));
+	// snprintf(ws_name, 20, ws->name);
+	seq_printf(m, "%-32s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
+    		   ws->name, active_count, ws->event_count,
+    		   ws->wakeup_count, ws->expire_count,
+    		   ktime_to_ms(active_time), ktime_to_ms(total_time),
+    		   ktime_to_ms(max_time), ktime_to_ms(ws->last_time),
+    		   ktime_to_ms(prevent_sleep_time));
 
 	spin_unlock_irqrestore(&ws->lock, flags);
 
-	return ret;
+	return 0;
 }
 
 /**
@@ -948,9 +945,9 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
 {
 	struct wakeup_source *ws;
 
-	seq_puts(m, "name                 active_count    event_count     "
-		"wakeup_count    expire_count    active_since    total_time      "
-		"max_time        last_change     prevent_suspend_time\n");
+	seq_puts(m, "name\t\t\t\t\tactive_count\tevent_count\twakeup_count\t"
+    		"expire_count\tactive_since\ttotal_time\tmax_time\t"
+    		"last_change\tprevent_suspend_time\n");
 
 	rcu_read_lock();
 	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
