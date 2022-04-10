@@ -77,6 +77,7 @@ deps_config := \
 	fs/kernfs/Kconfig \
 	fs/proc/Kconfig \
 	fs/ntfs/Kconfig \
+	fs/sdfat/Kconfig \
 	fs/fat/Kconfig \
 	fs/udf/Kconfig \
 	fs/isofs/Kconfig \
@@ -90,6 +91,7 @@ deps_config := \
 	fs/notify/inotify/Kconfig \
 	fs/notify/dnotify/Kconfig \
 	fs/notify/Kconfig \
+	fs/crypto/Kconfig \
 	fs/nilfs2/Kconfig \
 	fs/btrfs/Kconfig \
 	fs/ocfs2/Kconfig \
@@ -99,6 +101,7 @@ deps_config := \
 	fs/reiserfs/Kconfig \
 	fs/jbd2/Kconfig \
 	fs/jbd/Kconfig \
+	fs/sdcardfs/Kconfig \
 	fs/ext4/Kconfig \
 	fs/ext3/Kconfig \
 	fs/ext2/Kconfig \

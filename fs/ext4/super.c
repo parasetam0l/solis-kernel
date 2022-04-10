@@ -4451,13 +4451,11 @@ no_journal:
 			 "available");
 	}
 
-
 #define ANDROID_M_R_BLOCKS_COUNT	(1280)
 	if (le32_to_cpu(sbi->s_es->s_sec_magic) == EXT4_SEC_DATA_MAGIC ||
 			strncmp(es->s_volume_name, "data", 4) == 0)
 		atomic64_set(&sbi->s_r_blocks_count, ext4_r_blocks_count(es) ? :
 				ANDROID_M_R_BLOCKS_COUNT);
-				
 	if (atomic64_read(&sbi->s_r_blocks_count))
 		ext4_msg(sb, KERN_INFO, "Root reserved blocks %ld",
 				atomic64_read(&sbi->s_r_blocks_count));

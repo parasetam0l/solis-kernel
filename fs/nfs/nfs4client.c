@@ -911,7 +911,7 @@ static void nfs4_session_limit_rwsize(struct nfs_server *server)
 		server->dtsize = server_resp_sz;
 	if (server->rsize > server_resp_sz)
 		server->rsize = server_resp_sz;
-	if (server->wsize > server_rqst_sz)
+	if (!server->wsize || server->wsize > server_rqst_sz)
 		server->wsize = server_rqst_sz;
 #endif /* CONFIG_NFS_V4_1 */
 }

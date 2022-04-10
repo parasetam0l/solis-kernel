@@ -58,6 +58,13 @@ static int memblock_can_resize __initdata_memblock;
 static int memblock_memory_in_slab __initdata_memblock = 0;
 static int memblock_reserved_in_slab __initdata_memblock = 0;
 
+static enum memsize_kernel_type memsize_kernel_type = MEMSIZE_KERNEL_STOP;
+
+void set_memsize_kernel_type(enum memsize_kernel_type type)
+{
+	memsize_kernel_type = type;
+}
+
 /* inline so we don't get a warning when pr_debug is compiled out */
 static __init_memblock const char *
 memblock_type_name(struct memblock_type *type)
