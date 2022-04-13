@@ -5,3 +5,4 @@ include/config/kernel.release
 include/generated/compile.h
 include/generated/utsrelease.h
 *.tar
+.config.old

@@ -65,7 +65,7 @@ static int zh915_reg_read(struct zh915_data *pZh915data, unsigned char reg)
 	int ret;
 
 	ret = regmap_read(pZh915data->mpRegmap, reg, &val);
-    
+
 	if (ret < 0){
 		dev_err(pZh915data->dev,
 			"[VIB] %s reg=0x%x error %d\n", __FUNCTION__, reg, ret);
@@ -342,7 +342,7 @@ static int dev_init_platform_data(struct zh915_data *pZh915data)
 	value_tmp |= (pZh915Platdata->meLoop << LOOP_SHIFT );
 	value_tmp |= (pZh915Platdata->mdata.motor_type << MOTOR_TYPE_SHIFT );
 	value_tmp |= ((pZh915Platdata->break_mode ? 0x01 : 0x00) << BREAK_SHIFT);
- 
+
 	ret = zh915_set_bits(pZh915data,
 		ZH915_REG_CONTROL, ZH915_REG_CONTROL_MASK, value_tmp);
 	if (ret < 0) {
@@ -577,7 +577,7 @@ static int zh915_probe(struct i2c_client* client, const struct i2c_device_id* id
 
 	/* platform_data init */
 	if(client->dev.of_node) {
-		pZh915Platdata = devm_kzalloc(&client->dev, 
+		pZh915Platdata = devm_kzalloc(&client->dev,
 				sizeof(struct zh915_platform_data), GFP_KERNEL);
 		if (!pZh915Platdata) {
 			dev_err(&client->dev, "[VIB] unable to allocate pdata memory\n");
