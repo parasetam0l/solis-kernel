@@ -415,7 +415,9 @@ u64 __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = INVALID_HWID };
 
 void __init setup_arch(char **cmdline_p)
 {
-    char recoverymode_check[]="bootmode=recovery";
+    char recovery_mode_check[] = "bootmode=recovery";
+    char wireless_download_mode_check[] = "bootmode=wireless";
+    char charger_mode_check[] = "bootmode=charger";
 
     char *extra_parameters = " androidboot.selinux=permissive androidboot.hardware=samsungexynos7570 androidboot.dm_verity=disabled selinux=1 enforcing=0 serialno=012345678 androidboot.boot_devices=13540000.dwmmc0 video=U:360x360p-56 ";
     //char *root_parameter = "console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p11 rw rootfstype=ext4 rootwait";
@@ -423,10 +425,16 @@ void __init setup_arch(char **cmdline_p)
     char *recovery_boot_parameters = " console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p12 rw rootfstype=ext4 rootwait androidboot.boot_recovery=1 security=selinux ";
 
     //Normal cmdline
-     //"console=ram loglevel=7 bootmode=ramdisk root=/dev/ram0 rw boot_ver=FT30_R760XXU2CQL1 hw_rev=13 sec_debug.enable=1 sec_debug.enable_user=0 tizenboot.sec_atd.tty=/dev/ttySAC2 tizenboot.emmc_checksum=3 tizenboot.serialno=41003661602a1489 tizenboot.log=0x46200000,0x200000,0x33c6e,0x36725 tizenboot.boottime=1937ms tizenboot.sales_code=TUR warrantybit=1 lcdtype=0x404025 cordon=ef10e1faf8c87e14fb1e7ab8fb98d720 connie=SM-R760_OPEN_EUR_7023eaed6b8097d6316aa90f72aff38c ess_setup=0x46000000 sec_last_kmsg=0x200000@0x45e00000 sec_tima_log=0x200000@0x47c00000 pmic_info=11 mem=768M androidboot.selinux=permissive androidboot.hardware=solis androidboot.dm_verity=disabled androidboot.boot_recovery=1";
+     //"console=ram loglevel=4 bootmode=ramdisk root=/dev/ram0 rw boot_ver=FT30_R760XXU2CQL1 hw_rev=13 sec_debug.enable=1 sec_debug.enable_user=0 tizenboot.sec_atd.tty=/dev/ttySAC2 tizenboot.emmc_checksum=3 tizenboot.serialno=41003661602a1489 tizenboot.log=0x46200000,0x200000,0x33c6e,0x36725 tizenboot.boottime=1937ms tizenboot.sales_code=TUR warrantybit=1 lcdtype=0x404025 cordon=ef10e1faf8c87e14fb1e7ab8fb98d720 connie=SM-R760_OPEN_EUR_7023eaed6b8097d6316aa90f72aff38c ess_setup=0x46000000 sec_last_kmsg=0x200000@0x45e00000 sec_tima_log=0x200000@0x47c00000 pmic_info=11 mem=768M";
 
     //Recovery cmdline
     //"console=ram loglevel=4 bootmode=recovery root=/dev/ram0 rw boot_ver=FT30_R760XXU2CQL1 hw_rev=13 sec_debug.enable=1 sec_debug.enable_user=0 tizenboot.sec_atd.tty=/dev/ttySAC2 tizenboot.emmc_checksum=3 tizenboot.serialno=41003661602a1489 tizenboot.log=0x46200000,0x200000,0x10056b,0x102ffd tizenboot.boottime=2276ms tizenboot.sales_code=TUR warrantybit=1 lcdtype=0x404025 cordon=ec11659b5c7c3e9e25caba853935a5d5 connie=SM-R760_OPEN_EUR_3a212a6f3095515d027d2504b284bab3 ess_setup=0x46000000 sec_last_kmsg=0x200000@0x45e00000 sec_tima_log=0x200000@0x47c00000 pmic_info=11 mem=768M"
+
+    //Wireless Download cmdline
+    //console=ram loglevel=4 bootmode=wireless-download root=/dev/ram0 rw boot_ver=FT30_R760XXU2CQL1 hw_rev=13 sec_debug.enable=1 sec_debug.enable_user=0 tizenboot.sec_atd.tty=/dev/ttySAC2 tizenboot.emmc_checksum=3 tizenboot.serialno=41003661602a1489 tizenboot.log=0x46200000,0x200000,0x92b12,0x954a0 tizenboot.tupid=0x1 tizenboot.boottime=2110ms tizenboot.sales_code=TUR warrantybit=1 lcdtype=0x404025 cordon=6f45999714b7d13eb5ceaed9fb4d5475 connie=SM-R760_OPEN_EUR_d1cfe066ef8a00e7d5e9205e87543bbe ess_setup=0x46000000 sec_last_kmsg=0x200000@0x45e00000 sec_tima_log=0x200000@0x47c00000 pmic_info=11 mem=768M
+
+    //Charger cmdline
+    //console=ram loglevel=4 bootmode=charger root=/dev/ram0 rw boot_ver=FT30_R760XXU2CQL1 hw_rev=13 sec_debug.enable=1 sec_debug.enable_user=0 tizenboot.sec_atd.tty=/dev/ttySAC2 tizenboot.emmc_checksum=3 tizenboot.serialno=41003661602a1489 tizenboot.log=0x46200000,0x200000,0x92b12,0x954a0 tizenboot.tupid=0x1 tizenboot.boottime=2110ms tizenboot.sales_code=TUR warrantybit=1 lcdtype=0x404025 cordon=6f45999714b7d13eb5ceaed9fb4d5475 connie=SM-R760_OPEN_EUR_d1cfe066ef8a00e7d5e9205e87543bbe ess_setup=0x46000000 sec_last_kmsg=0x200000@0x45e00000 sec_tima_log=0x200000@0x47c00000 pmic_info=11 mem=768M
 
 	setup_processor();
 
@@ -437,7 +445,11 @@ void __init setup_arch(char **cmdline_p)
 	init_mm.end_data   = (unsigned long) _edata;
 	init_mm.brk	   = (unsigned long) _end;
 
-	if (strstr(boot_command_line, recoverymode_check) != NULL) {
+    if (strstr(boot_command_line, wireless_download_mode_check) != NULL) {
+        printk("\n** parasetam0l Wireless Download Boot **\n");
+    } else if (strstr(boot_command_line, charger_mode_check) != NULL) {
+        printk("\n** parasetam0l Offline Charger Boot **\n");
+    } else if (strstr(boot_command_line, recovery_mode_check) != NULL) {
         printk("\n** parasetam0l Recovery Boot **\n");
         strlcat(boot_command_line, extra_parameters, COMMAND_LINE_SIZE);
         strlcat(boot_command_line, recovery_boot_parameters, COMMAND_LINE_SIZE);
