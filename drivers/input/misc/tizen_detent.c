@@ -39,10 +39,10 @@ extern struct class *sec_class;
 #endif
 
 enum direction_patten {
-	CounterClockwise = -2,
-	Detent_Return = -1,
-	Detent_Leave = 1,
-	Clockwise = 2,
+	CounterClockwise = 1,
+	Detent_Return = 0,
+	Detent_Leave = 0,
+	Clockwise = -1,
 	Direction_MAX,
 };
 
@@ -156,7 +156,7 @@ static irqreturn_t hall_sensor_detect_handler(int irq, void *dev_id)
 	mutex_unlock(&ddata->hall_lock);
 
 	input_report_rel(ddata->input_dev, REL_WHEEL, direction);
-	input_report_rel(ddata->input_dev, REL_X, (unsigned char)~value & 0x07);
+	//input_report_rel(ddata->input_dev, REL_X, (unsigned char)~value & 0x07);
 	input_sync(ddata->input_dev);
 
 #ifdef CONFIG_SLEEP_MONITOR
@@ -514,16 +514,14 @@ static int __devinit hall_sensor_probe(struct platform_device *pdev)
 	ddata->dev = pdev;
 	platform_set_drvdata(pdev, ddata);
 
-	__set_bit(EV_REL, ddata->input_dev->evbit);
 	__set_bit(EV_KEY, ddata->input_dev->evbit);
-	__set_bit(REL_X, ddata->input_dev->relbit);
-	__set_bit(REL_Y, ddata->input_dev->relbit);
-	__set_bit(BTN_LEFT, ddata->input_dev->keybit);
-	__set_bit(REL_WHEEL, ddata->input_dev->relbit);
+	__set_bit(KEY_LEFT, ddata->input_dev->keybit);
+	__set_bit(KEY_RIGHT, ddata->input_dev->keybit);
+	__set_bit(KEY_ENTER, ddata->input_dev->keybit);
 
-	input_set_capability(ddata->input_dev, EV_REL, REL_X);
-	input_set_capability(ddata->input_dev, EV_REL, REL_Y);
 	input_set_capability(ddata->input_dev, EV_REL, REL_WHEEL);
+
+    input_set_drvdata(ddata->input_dev, &ddata);
 
 	ddata->input_dev->name = HALL_NAME;
 	ddata->input_dev->id.bustype = BUS_VIRTUAL;

@@ -4,5 +4,8 @@ arch/arm64/boot/dzImage
 include/config/kernel.release
 include/generated/compile.h
 include/generated/utsrelease.h
+include/config/auto.conf
+include/config/tristate.conf
+include/generated/autoconf.h
 *.tar
 .config.old

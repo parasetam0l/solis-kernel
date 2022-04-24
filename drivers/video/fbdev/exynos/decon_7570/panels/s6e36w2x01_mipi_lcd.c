@@ -1275,40 +1275,6 @@ static ssize_t s6e36w2x01_normal_dc_power_store(struct device *dev,
 }
 #endif
 
-static struct device_attribute ld_dev_attrs[] = {
-	__ATTR(mcd_test, S_IRUGO | S_IWUSR, s6e36w2x01_mcd_show, s6e36w2x01_mcd_store),
-	__ATTR(self_mask, S_IWUSR, NULL, s6e36w2x01_self_mask_store),
-	__ATTR(self_animation, S_IWUSR, NULL, s6e36w2x01_self_animation_store),
-	__ATTR(self_clock, S_IWUSR, NULL, s6e36w2x01_selfclock_store),
-	__ATTR(self_blink, S_IWUSR, NULL, s6e36w2x01_self_blink_store),
-	__ATTR(alpm, S_IRUGO | S_IWUSR, s6e36w2x01_alpm_show, s6e36w2x01_alpm_store),
-	__ATTR(hlpm, S_IRUGO | S_IWUSR, s6e36w2x01_hlpm_show, s6e36w2x01_hlpm_store),
-	__ATTR(cell_id, S_IRUGO, s6e36w2x01_cell_id_show, NULL),
-	__ATTR(acl, S_IRUGO | S_IWUSR, s6e36w2x01_acl_show, s6e36w2x01_acl_store),
-	__ATTR(scm, S_IRUGO | S_IWUSR, s6e36w2x01_scm_show, s6e36w2x01_scm_store),
-	__ATTR(hbm, S_IRUGO | S_IWUSR, s6e36w2x01_hbm_show, s6e36w2x01_hbm_store),
-	__ATTR(elvss, S_IRUGO | S_IWUSR, s6e36w2x01_elvss_show, s6e36w2x01_elvss_store),
-	__ATTR(chip_id, S_IRUGO, s6e36w2x01_octa_chip_id_show, NULL),
-	__ATTR(refresh, S_IRUGO | S_IWUSR,
-			s6e36w2x01_refresh_show, s6e36w2x01_refresh_store),
-	__ATTR(cr_map, S_IRUGO, s6e36w2x01_cr_map_show, NULL),
-	__ATTR(br_map, S_IRUGO, s6e36w2x01_br_map_show, NULL),
-	__ATTR(dim_table, S_IRUGO | S_IWUSR,
-			s6e36w2x01_dimming_table_show, s6e36w2x01_dimming_table_store),
-	__ATTR(read_mtp, S_IRUGO | S_IWUSR,
-			s6e36w2x01_read_mtp_show, s6e36w2x01_read_mtp_store),
-#ifdef CONFIG_COPR_SUPPORT
-	__ATTR(copr, S_IRUGO | S_IWUSR,
-			s6e36w2x01_copr_show, s6e36w2x01_copr_store),
-#endif
-#ifdef CONFIG_EXYNOS_HLPM_TEST_SUPPORT
-    __ATTR(hlpm_power, S_IRUGO | S_IWUSR,
-	    	s6e36w2x01_hlpm_power_show, s6e36w2x01_hlpm_power_store),
-    __ATTR(normal_dc_power, S_IRUGO | S_IWUSR,
-	    	s6e36w2x01_normal_dc_power_show, s6e36w2x01_normal_dc_power_store),
-#endif
-};
-
 static int s6e36w2x01_get_brightness(struct backlight_device *bd)
 {
 	return bd->props.brightness;
@@ -2372,6 +2338,32 @@ static int s6e36w2x01_aod_ctrl(struct dsim_device *dsim, int enable)
 	return 0;
 }
 
+static ssize_t s6e36w2x01_aod_show(struct device *dev,
+				struct device_attribute *attr, char *buf)
+{
+	struct dsim_device *dsim = get_dsim_drvdata(ID);
+	struct lcd_device *lcd_dev = dsim->lcd;
+	struct s6e36w2x01 *lcd = dev_get_drvdata(&lcd_dev->dev);
+
+	pr_info("%s aod_mode[%d]\n", "s6e36w2x01_aod_show", lcd->aod_mode);
+	return 0;
+}
+
+static ssize_t s6e36w2x01_aod_store(struct device *dev,
+				struct device_attribute *attr, const char *buf,
+				size_t size)
+{
+	struct dsim_device *dsim = get_dsim_drvdata(ID);
+
+	if (!strncmp(buf, "on", 2))
+		s6e36w2x01_aod_ctrl(dsim, 1);
+	else if (!strncmp(buf, "off", 3))
+		s6e36w2x01_aod_ctrl(dsim, 0);
+
+	return size;
+}
+
+
 static int s6e36w2x01_metadata_set(struct dsim_device *dsim, struct decon_metadata *metadata)
 {
 	struct lcd_device *panel = dsim->lcd;
@@ -2548,6 +2540,41 @@ static struct sleep_monitor_ops s6e36w2x01_sleep_monitor_ops = {
 	.read_cb_func = s6e36w2x01_sleep_monitor_cb,
 };
 #endif
+
+static struct device_attribute ld_dev_attrs[] = {
+	__ATTR(mcd_test, S_IRUGO | S_IWUSR, s6e36w2x01_mcd_show, s6e36w2x01_mcd_store),
+	__ATTR(self_mask, S_IWUSR, NULL, s6e36w2x01_self_mask_store),
+	__ATTR(self_animation, S_IWUSR, NULL, s6e36w2x01_self_animation_store),
+	__ATTR(self_clock, S_IWUSR, NULL, s6e36w2x01_selfclock_store),
+	__ATTR(self_blink, S_IWUSR, NULL, s6e36w2x01_self_blink_store),
+	__ATTR(aod, S_IRUGO | S_IWUSR, s6e36w2x01_aod_show, s6e36w2x01_aod_store),
+	__ATTR(alpm, S_IRUGO | S_IWUSR, s6e36w2x01_alpm_show, s6e36w2x01_alpm_store),
+	__ATTR(hlpm, S_IRUGO | S_IWUSR, s6e36w2x01_hlpm_show, s6e36w2x01_hlpm_store),
+	__ATTR(cell_id, S_IRUGO, s6e36w2x01_cell_id_show, NULL),
+	__ATTR(acl, S_IRUGO | S_IWUSR, s6e36w2x01_acl_show, s6e36w2x01_acl_store),
+	__ATTR(scm, S_IRUGO | S_IWUSR, s6e36w2x01_scm_show, s6e36w2x01_scm_store),
+	__ATTR(hbm, S_IRUGO | S_IWUSR, s6e36w2x01_hbm_show, s6e36w2x01_hbm_store),
+	__ATTR(elvss, S_IRUGO | S_IWUSR, s6e36w2x01_elvss_show, s6e36w2x01_elvss_store),
+	__ATTR(chip_id, S_IRUGO, s6e36w2x01_octa_chip_id_show, NULL),
+	__ATTR(refresh, S_IRUGO | S_IWUSR,
+			s6e36w2x01_refresh_show, s6e36w2x01_refresh_store),
+	__ATTR(cr_map, S_IRUGO, s6e36w2x01_cr_map_show, NULL),
+	__ATTR(br_map, S_IRUGO, s6e36w2x01_br_map_show, NULL),
+	__ATTR(dim_table, S_IRUGO | S_IWUSR,
+			s6e36w2x01_dimming_table_show, s6e36w2x01_dimming_table_store),
+	__ATTR(read_mtp, S_IRUGO | S_IWUSR,
+			s6e36w2x01_read_mtp_show, s6e36w2x01_read_mtp_store),
+#ifdef CONFIG_COPR_SUPPORT
+	__ATTR(copr, S_IRUGO | S_IWUSR,
+			s6e36w2x01_copr_show, s6e36w2x01_copr_store),
+#endif
+#ifdef CONFIG_EXYNOS_HLPM_TEST_SUPPORT
+    __ATTR(hlpm_power, S_IRUGO | S_IWUSR,
+	    	s6e36w2x01_hlpm_power_show, s6e36w2x01_hlpm_power_store),
+    __ATTR(normal_dc_power, S_IRUGO | S_IWUSR,
+	    	s6e36w2x01_normal_dc_power_show, s6e36w2x01_normal_dc_power_store),
+#endif
+};
 
 
 static int s6e36w2x01_probe(struct dsim_device *dsim)
