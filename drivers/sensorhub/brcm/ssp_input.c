@@ -125,16 +125,9 @@ void report_meta_data(struct ssp_data *data, struct sensor_value *s)
 		pr_warn("[SSP]:%s : There are no input_dev!!\n", __func__);
 #endif
 	} else {
-#ifdef CONFIG_TIZEN
-		/* Current all Tizen_FW does not use meta_input event/interface
-		 * So just return them without toss to platform each actual data
-		 */
-		pr_info("[SSP]: TizenFW does not use meta data!!\n");
-#else
-		input_report_rel(data->meta_input_dev, REL_DIAL, s->meta_data.what);
-		input_report_rel(data->meta_input_dev, REL_HWHEEL, s->meta_data.sensor + 1);
-		input_sync(data->meta_input_dev);
-#endif
+        input_report_rel(data->meta_input_dev, REL_DIAL, s->meta_data.what);
+        input_report_rel(data->meta_input_dev, REL_HWHEEL, s->meta_data.sensor + 1);
+        input_sync(data->meta_input_dev);
 	}
 }
 

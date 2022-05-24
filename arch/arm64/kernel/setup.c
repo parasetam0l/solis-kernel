@@ -120,6 +120,42 @@ static struct resource mem_res[] = {
 #define kernel_code mem_res[0]
 #define kernel_data mem_res[1]
 
+enum { MAX_KEY_LEN = 31 };
+
+int find_any_key_value(const char *str, char *value);
+
+int find_any_key_value(const char *str, char *value)
+{
+    char junk[256];
+    const char *search = str;
+    while (*search != '\0')
+    {
+        int offset;
+        int rc;
+
+        if (sscanf(search, " tizenboot.serialno=%63s%n", value, &offset) == 2){
+            return(search + offset - str);
+        }
+        if ((rc = sscanf(search, "%255s%n", junk, &offset)) != 1)
+            return -1;
+        search += offset;
+    }
+
+    return -1;
+}
+
+void parse_tizen_serialno(const char *cmdline, char *value){
+    int offset;
+     const char *str;
+
+     str = cmdline;
+    while ((offset = find_any_key_value(str, value)) > 0)
+    {
+        str += offset;
+    }
+}
+
+
 void __init early_print(const char *str, ...)
 {
 	char buf[256];
@@ -415,11 +451,15 @@ u64 __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = INVALID_HWID };
 
 void __init setup_arch(char **cmdline_p)
 {
+    char *tizen_serial_no = "0123456789";
+
     char recovery_mode_check[] = "bootmode=recovery";
     char wireless_download_mode_check[] = "bootmode=wireless";
     char charger_mode_check[] = "bootmode=charger";
+    char boot_serial_no_prefix[] = " serialno=";
+    char androidboot_serial_no_prefix[] = " androidboot.serialno=";
 
-    char *extra_parameters = " androidboot.selinux=permissive androidboot.hardware=samsungexynos7570 androidboot.dm_verity=disabled selinux=1 enforcing=0 serialno=012345678 androidboot.boot_devices=13540000.dwmmc0 video=U:360x360p-56 ";
+    char *extra_parameters = " androidboot.selinux=permissive androidboot.hardware=samsungexynos7570 androidboot.dm_verity=disabled selinux=1 enforcing=0 androidboot.boot_devices=13540000.dwmmc0 video=U:360x360p-56 ";
     //char *root_parameter = "console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p11 rw rootfstype=ext4 rootwait";
     char *normal_boot_parameters = " console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p13 rw rootfstype=ext4 rootwait security=selinux ";
     char *recovery_boot_parameters = " console=ram loglevel=7 bootmode=normal root=/dev/mmcblk0p12 rw rootfstype=ext4 rootwait androidboot.boot_recovery=1 security=selinux ";
@@ -460,6 +500,12 @@ void __init setup_arch(char **cmdline_p)
         strlcat(boot_command_line, normal_boot_parameters, COMMAND_LINE_SIZE);
         memmove(boot_command_line, boot_command_line+58, strlen(boot_command_line));
     }
+
+    parse_tizen_serialno(boot_command_line, tizen_serial_no);
+    strlcat(boot_command_line, boot_serial_no_prefix, COMMAND_LINE_SIZE);
+    strlcat(boot_command_line, tizen_serial_no, COMMAND_LINE_SIZE);
+    strlcat(boot_command_line, androidboot_serial_no_prefix, COMMAND_LINE_SIZE);
+    strlcat(boot_command_line, tizen_serial_no, COMMAND_LINE_SIZE);
 
 	*cmdline_p = boot_command_line;
 

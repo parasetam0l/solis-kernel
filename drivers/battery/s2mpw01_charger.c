@@ -1608,7 +1608,7 @@ static int s2mpw01_charger_probe(struct platform_device *pdev)
 		charger->pdata->charger_name = "sec-charger";
 
 	charger->psy_chg.name           = charger->pdata->charger_name;
-	charger->psy_chg.type           = POWER_SUPPLY_TYPE_USB;
+	charger->psy_chg.type           = POWER_SUPPLY_TYPE_UNKNOWN;
 	charger->psy_chg.get_property   = s2mpw01_chg_get_property;
 	charger->psy_chg.set_property   = s2mpw01_chg_set_property;
 	charger->psy_chg.properties     = s2mpw01_charger_props;
